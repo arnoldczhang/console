@@ -102,6 +102,12 @@
     return arr;
   };
 
+  function toHtml (html) {
+    return html
+      .replace(/ /g, '&nbsp;')
+      .replace(/[\n\r]/g, '<br />');
+  };
+
   function toNumber (str) {
     return parseInt(str, 10);
   };
@@ -112,6 +118,10 @@
 
   function isError (err) {
     return ({}.toString).call(err) === '[object Error]';
+  };
+
+  function isArgs (args) {
+    return ({}.toString).call(args) === '[object Arguments]';
   };
 
   function isArrayLike (obj) {
@@ -349,15 +359,31 @@
     ";
   };
 
-  function getLogText () {
+  function getErrorText () {
+    return getLogText(style.error, arguments);
+  };
+
+  function getWarnText () {
+    return getLogText(style.warn, arguments);
+  };
+
+  function getLogText (className, args) {
+    className = isArgs(args) ? className : '';
     var time = (new Date).toString().substring(16, 24);
-    var text = toArray(arguments);
+    var text = toArray(className ? args : arguments);
     text.map(function (t, i, arr) {
-      arr[i] = "<code class='" + style.arg + "'>" + analyzeObjText(t) + "</code>";
+      var result = analyzeObjText(t);
+
+      if (isObject(result)) {
+        className = result.className;
+        result = result.text;
+      }
+      
+      arr[i] = "<code class='" + style.arg + "'>" + result + "</code>";
     });
 
     return "\
-      <li class='" + style.li + "'>\
+      <li class='" + style.li + ' ' + className + "'>\
         <span class='" + style.word + "'>" + text.join(' ') + "</span>\
         <span class='" + style.time + "'>" + time + "</span>\
       </li>\
@@ -390,17 +416,14 @@
       else {
 
         if (!isError(text)) {
-          return JSON.stringify(text, null, ' ')
-            .replace(/ /g, '&nbsp;')
-            .replace(/[\n\r]/g, '<br />');
+          return toHtml(JSON.stringify(text, null, ' '));
         }
 
-        else {
-          return text.stack
-            .replace(/ /g, '&nbsp;')
-            .replace(/[\n\r]/g, '<br />');
-        }
-        
+        return {
+          className: style.error,
+          text: toHtml(text.stack)
+        };
+
       }
 
     }
@@ -443,17 +466,21 @@
   };
 
   function error () {
-
+    delay(function (args) {
+      CONTENT.appendChild(wrap(getErrorText.apply(null, args)));
+    }, 0, arguments);    
   };
 
   function warn () {
-
+    delay(function (args) {
+      CONTENT.appendChild(wrap(getWarnText.apply(null, args)));
+    }, 0, arguments);
   };
 
   extend(console, {
     log: log,
-    // error: error,
-    // warn: warn
+    error: error,
+    warn: warn
   });
 
   init();

@@ -67,12 +67,16 @@ ul {
       -webkit-overflow-scrolling: touch;
       .content {
       }
-      .content {
-
+      .warn {
+        color: orange;
+        background-color: #fffacd;
+      }
+      .error {
+        color: #dc143c;
+        background-color: #ffe4e1;
       }
       .li {
         position: relative;
-        box-shadow: 0 1px 0 0 #E1E1E1;
         line-height: 30px;
         height: 30px;
         overflow: hidden;
@@ -99,9 +103,31 @@ ul {
           width: 75px;
           line-height: 30px;
           text-align: center;
+          font-size: 14px;
           top: 0;
           right: 0;
         }
+      }
+      .error:after,
+      .warn:after,
+      .li:after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        bottom: -50%;
+        left: -50%;
+        right: -50%;
+        -webkit-transform: scale(0.5);
+        transform: scale(0.5);
+        border-bottom: 1px solid #e1e1e1;
+        -webkit-border-radius: 0;
+        border-radius: 0;
+      }
+      .error:after {
+        border-color:#f4a0ab;
+      }
+      .warn:after {
+        border-color:#ffb930;
       }
       .ctOpen {
         height: auto;
