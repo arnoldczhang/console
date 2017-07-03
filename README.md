@@ -1,0 +1,2 @@
+# console
+a console plugin
