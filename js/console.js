@@ -105,7 +105,7 @@
   function toHtml (html) {
     return html
       .replace(/ /g, '&nbsp;')
-      .replace(/[\n\r]/g, '<br />');
+      .replace(/[\n]/g, '<br />');
   };
 
   function toNumber (str) {
@@ -378,7 +378,7 @@
         className = result.className;
         result = result.text;
       }
-      
+
       arr[i] = "<code class='" + style.arg + "'>" + result + "</code>";
     });
 
