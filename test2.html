@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>test</title>
+        <meta content="text/html; charset=utf-8">
+        <meta charset="utf-8">
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+        <meta name="format-detection" content="telephone=no">
+        <meta name="format-detection" content="email=no">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    </head>
+    <body>
+        <script type="text/javascript" src="./dist/console.min.js"></script>
+        <div id="container"></div>
+        <script type="text/javascript">
+            var c = {a: 123, b: {c: []}};
+            console.log(document.body);
+            console.log('aa', 'b', c);
+            console.log('aa');
+            try {
+                var aa = c.b.a;
+            } catch (err) {
+                console.log(err);
+            }
+        </script>
+    </body>
+</html>
