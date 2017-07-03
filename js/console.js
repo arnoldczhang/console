@@ -24,13 +24,15 @@
     CLEAR,
     MASK,
     BTNH,
-    BTNW;
+    BTNW
+    ;
 
   var console = w.console || {},
     style = require('../css/console.less.module'),
     btnText = getBtnText(),
     mainText = getMainText(),
-    node = document.createElement('div')
+    node = document.createElement('div'),
+    isMobile = /Mobile/.test(navigator.userAgent)
     ;
 
   function extend (target, source) {
@@ -91,7 +93,8 @@
 
   function toArray (arrLike) {
     var len,
-      arr = [];
+      arr = []
+      ;
 
     if (len = arrLike.length) {
       for (var i = -1; i++ < len - 1; ) {
@@ -199,7 +202,8 @@
     var _startX,
       _startY,
       _dist = 10,
-      _movable = false;
+      _movable = false
+      ;
 
     addEvent(BTN, 'mousedown', _startEvt);
     addEvent(BTN, 'touchstart', _startEvt);
@@ -217,9 +221,11 @@
 
     function _moveEvt (e) {
       if (!_movable) return;
+      e.preventDefault();
       var pos = getPos(e),
         pageX = pos.pageX,
-        pageY = pos.pageY;
+        pageY = pos.pageY
+        ;
       resetBtnPos(pageX, pageY);
     };
 
@@ -227,7 +233,8 @@
       _movable = false;
       var pos = getPos(e),
         pageX = pos.pageX,
-        pageY = pos.pageY;
+        pageY = pos.pageY
+        ;
 
       if (Math.abs(pageX - _startX) <= _dist 
         && Math.abs(pageY - _startY) <= _dist) {
@@ -264,12 +271,16 @@
     var _startX,
       _startY,
       _dist = 10,
-      _movable = false;
+      _movable = false
+      ;
 
-    // addEvent(MASK, 'mouseup', _closeConsole);
+    if (!isMobile) {
+      addEvent(MASK, 'mouseup', _closeConsole);
+      addEvent(CONTENT, 'mouseup', _toggleContent);
+    }
+    
     addEvent(MASK, 'touchend', _closeConsole);
     addEvent(INPUT, 'blur', _doConsole);
-    // addEvent(CONTENT, 'mouseup', _toggleContent);
     addEvent(CONTENT, 'touchstart', _toggleStartContent);
     addEvent(CONTENT, 'touchend', _toggleContent);
     addEvent(SURE, 'touchend', _sureContent);
@@ -293,7 +304,8 @@
     function _toggleContent (e) {
       var pos = getPos(e),
         pageX = pos.pageX,
-        pageY = pos.pageY;
+        pageY = pos.pageY
+        ;
 
       if (Math.abs(pageX - _startX) <= _dist 
         && Math.abs(pageY - _startY) <= _dist) {
@@ -393,7 +405,8 @@
   function analyzeObjText (text) {
     var arr = [],
       len,
-      i = -1;
+      i = -1
+      ;
     
     if (isObject(text)) {
 
@@ -437,7 +450,8 @@
       id = node.id ? node.id : '',
       className = node.className ? node.className : '',
       children = node.childNodes,
-      obj = {};
+      obj = {}
+      ;
 
     id && (obj.id = id);
     className && (obj.className = className);
@@ -459,23 +473,21 @@
   };
 
   /********extend**********/
-  function log () {
-    delay(function (args) {
-      CONTENT.appendChild(wrap(getLogText.apply(null, args)));
-    }, 0, arguments);
+  var logMap = {
+    log: getLogText,
+    warn: getWarnText,
+    error: getErrorText
   };
 
-  function error () {
+  function baseLog (type) {
     delay(function (args) {
-      CONTENT.appendChild(wrap(getErrorText.apply(null, args)));
-    }, 0, arguments);    
+      CONTENT.appendChild(wrap(logMap[type].apply(null, args)));
+    }, 0, toArray(arguments).slice(1));
   };
 
-  function warn () {
-    delay(function (args) {
-      CONTENT.appendChild(wrap(getWarnText.apply(null, args)));
-    }, 0, arguments);
-  };
+  var log = baseLog.bind(null, 'log');
+  var warn = baseLog.bind(null, 'warn');
+  var error = baseLog.bind(null, 'error');
 
   extend(console, {
     log: log,
