@@ -84,14 +84,15 @@ ul {
         .word {
           display: block;
           margin-right: 75px;
+          overflow: auto;
           .arg {
+            font-size:12px;
             vertical-align: top;
             overflow : hidden;
             text-overflow: ellipsis;
             display: -webkit-box;
             -webkit-line-clamp: 1;
             -webkit-box-orient: vertical;
-            max-width: 100%;
             overflow-x: auto;
             float: left;
             padding: 0 5px;
