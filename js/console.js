@@ -128,6 +128,7 @@
   };
 
   function isArrayLike (obj) {
+    if (obj == null) return false;
     var length = "length" in obj && obj.length,
       type = typeof obj;
 
@@ -147,6 +148,7 @@
 
   function isNode (obj) {
     return isObject(obj)
+      && obj != null
       && obj.nodeType
       && obj.nodeName;
   };

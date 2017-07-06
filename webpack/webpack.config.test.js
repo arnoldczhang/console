@@ -2,7 +2,8 @@ var webpack = require('webpack');
 module.exports = function () {
   return {
     entry: {
-      console: './js/console.js'
+      console: './js/console.js',
+      localStorage: './js/localStorage.js',
     },
     output: {
       path: './dist',

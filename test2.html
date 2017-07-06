@@ -12,8 +12,11 @@
     </head>
     <body>
         <script type="text/javascript" src="./dist/console.min.js"></script>
+        <script type="text/javascript" src="./dist/localStorage.min.js"></script>
         <div id="container"></div>
         <script type="text/javascript">
+
+            // console
             var c = {a: 123, b: {c: ['a', 'b', 'c']}};
             function d (a, b, c, d) {
                 return a + b;
@@ -28,6 +31,15 @@
             } catch (err) {
                 console.log(err);
             }
+
+            // localStorage
+            localStorage.setItem('a', JSON.stringify({a:1}));
+            console.log(window.name);
+            console.log(1, localStorage.getItem('a'));
+            localStorage.removeItem('a');
+            console.log(2, localStorage.getItem('a'));
+            localStorage.clear();
+            console.log(3, window.name);
         </script>
     </body>
 </html>
