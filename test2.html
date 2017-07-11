@@ -35,11 +35,11 @@
             // localStorage
             localStorage.setItem('a', JSON.stringify({a:1}));
             console.log(window.name);
-            console.log(1, localStorage.getItem('a'));
+            console.log(1, localStorage.getItem('a') === JSON.stringify({a:1}));
             localStorage.removeItem('a');
-            console.log(2, localStorage.getItem('a'));
+            console.log(2, localStorage.getItem('a') == null);
             localStorage.clear();
-            console.log(3, window.name);
+            console.log(3, window.name === '');
         </script>
     </body>
 </html>

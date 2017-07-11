@@ -22,11 +22,13 @@
   var stringify = JSON.stringify,
     parse = JSON.parse,
     storage = w.localStorage || {},
-    db = NAME ? parse(NAME) : {}
+    db = NAME ? parse(NAME) : {},
+    def = Object.defineProperty
     ;
 
   function extend (target) {
-    var source = toArray(arguments).slice(1);
+    var args = toArray(arguments),
+      source = args.slice(1);
 
     if (Object.assign) {
       return Object.assign.apply(null, arguments);
@@ -35,11 +37,9 @@
     else {
       source.forEach(function (s) {
         for (var key in s) {
-
           if (s.hasOwnProperty(key)) {
             target[key] = s[key];
           }
-
         }
       });
       return target;
@@ -72,17 +72,23 @@
     try {
       storage.setItem('test', 'test');
     } catch (err) {
+      var GLOBAL = {};
       var defaultProps = {
         writable: false,
         configurable: false,
         enumerable: false
       };
 
-      Object.defineProperty(w, 'localStorage', extend(defaultProps, {
+      function extendDefault (target) {
+        var obj = {};
+        return extend(obj, defaultProps, target);
+      };
+
+      def(GLOBAL, 'Storage', extendDefault({
         value: new (function () {
-          var _storage = {};
+          var _storage = Object.create(null);
           Object.defineProperties(_storage, {
-            setItem: extend({}, defaultProps, {
+            setItem: extendDefault({
               value: function setItem (key, value) {
                 if (!isString(key)) {
                   key = toString(key);
@@ -96,7 +102,7 @@
                 w.name = stringify(db);
               }
             }),
-            getItem: extend({}, defaultProps, {
+            getItem: extendDefault({
               value: function getItem (key) {
                 if (!isString(key)) {
                   key = toString(key);
@@ -107,7 +113,7 @@
                 return result;
               }
             }),
-            removeItem: extend({}, defaultProps, {
+            removeItem: extendDefault({
               value: function removeItem (key) {
                 if (!isString(key)) {
                   key = toString(key);
@@ -117,13 +123,13 @@
                 w.name = stringify(db);
               }
             }),
-            clear: extend({}, defaultProps, {
+            clear: extendDefault({
               value: function clear () {
                 db = {};
                 w.name = '';
               }
             }),
-            key: extend({}, defaultProps, {
+            key: extendDefault({
               value: function key (index) {
                 if (!arguments.length) {
                   return new TypeError('Failed to execute \'key\' on \'Storage\': 1 argument required, but only 0 present.');
@@ -142,6 +148,17 @@
           });
           return _storage;
         }) ()
+      }));
+
+      def(GLOBAL.Storage, 'constructor', extendDefault({
+        value: GLOBAL.Storage,
+        writable: true
+      }));
+
+      var localStorage = {};
+      localStorage.__proto__ = GLOBAL.Storage;
+      def(w, 'localStorage', extendDefault({
+        value: localStorage
       }));
     }
   };
