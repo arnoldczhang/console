@@ -32,7 +32,9 @@
     btnText = getBtnText(),
     mainText = getMainText(),
     node = document.createElement('div'),
-    isMobile = /Mobile/.test(navigator.userAgent)
+    isMobile = /Mobile/.test(navigator.userAgent),
+
+    push = [].push
     ;
 
   function extend (target, source) {
@@ -49,7 +51,13 @@
 
   function wrap (html) {
     node.innerHTML = html;
-    return node.children[0];
+    var children = node.children;
+
+    if (children.length === 1) {
+      return children[0];
+    }
+
+    return children;
   };
 
   function lower (str) {
@@ -151,6 +159,28 @@
       && obj != null
       && obj.nodeType
       && obj.nodeName;
+  };
+
+  function hasNode (arr) {
+    var item,
+      nodeList = [],
+      otherList = [];
+
+    if (isArrayLike(arr)) {
+
+      for (var i = arr.length; i-- > 0; ) {
+        item = arr[i];
+        (isNode(item) ? nodeList : otherList).unshift(item);
+      }
+
+      return {
+        hasNode: !!nodeList.length,
+        nodeList: nodeList,
+        otherList: otherList
+      };
+    }
+
+    return false;
   };
 
   function query (selector) {
@@ -385,6 +415,19 @@
     className = isArgs(args) ? className : '';
     var time = (new Date).toString().substring(16, 24);
     var text = toArray(className ? args : arguments);
+    var hasValid = text.pop();
+    var nodeList,
+      result,
+      str = '';
+
+    if (!hasValid && (result = hasNode(text)).hasNode) {
+      result.nodeList.forEach(function (node) {
+        str += getLogText(node, true);
+      });
+      str += getLogText(result.otherList, true);
+      return str;
+    }
+
     text.map(function (t, i, arr) {
       var result = analyzeObjText(t);
 
@@ -483,7 +526,16 @@
 
   function baseLog (type) {
     delay(function (args) {
-      CONTENT.appendChild(wrap(logMap[type].apply(null, args)));
+      push.call(args, false);
+      var wrapResult = wrap(logMap[type].apply(null, args));
+
+      if (isNode(wrapResult)) {
+        return CONTENT.appendChild(wrapResult);
+      }
+
+      return toArray(wrapResult).forEach(function (child) {
+        CONTENT.appendChild(child);
+      });
     }, 0, toArray(arguments).slice(1));
   };
 
