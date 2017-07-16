@@ -16,7 +16,8 @@
 
   var DOC = w.document,
     NAME = w.name,
-    BODY = DOC.body
+    BODY = DOC.body,
+    ISDEBUG = false
     ;
 
   var stringify = JSON.stringify,
@@ -70,9 +71,12 @@
 
   function init () {
     try {
-      storage.setItem('test', 'test');
+      ISDEBUG ? (aa = bb) : storage.setItem('test', 'test');
     } catch (err) {
-      var GLOBAL = {};
+      var GLOBAL = {
+        Storage: function Storage () {}
+      };
+
       var defaultProps = {
         writable: false,
         configurable: false,
@@ -84,9 +88,9 @@
         return extend(obj, defaultProps, target);
       };
 
-      def(GLOBAL, 'Storage', extendDefault({
-        value: new (function () {
-          var _storage = Object.create(null);
+      def(GLOBAL, '_Storage', extendDefault({
+        value: (function () {
+          var _storage = {};
           Object.defineProperties(_storage, {
             setItem: extendDefault({
               value: function setItem (key, value) {
@@ -147,16 +151,20 @@
             }),
           });
           return _storage;
-        }) ()
+        } ())
       }));
 
-      def(GLOBAL.Storage, 'constructor', extendDefault({
+      GLOBAL.Storage.prototype = GLOBAL._Storage;
+      def(GLOBAL.Storage, 'name', extendDefault({
+        value: 'Storage'
+      }));
+
+      def(GLOBAL._Storage, 'constructor', extendDefault({
         value: GLOBAL.Storage,
         writable: true
       }));
 
-      var localStorage = {};
-      localStorage.__proto__ = GLOBAL.Storage;
+      var localStorage = new GLOBAL.Storage;
       def(w, 'localStorage', extendDefault({
         value: localStorage
       }));
