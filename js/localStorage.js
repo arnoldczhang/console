@@ -88,82 +88,89 @@
         return extend(obj, defaultProps, target);
       };
 
-      def(GLOBAL, '_Storage', extendDefault({
-        value: (function () {
-          var _storage = {};
-          Object.defineProperties(_storage, {
-            setItem: extendDefault({
-              value: function setItem (key, value) {
-                if (!isString(key)) {
-                  key = toString(key);
-                }
+      GLOBAL._Storage = function _Storage () {
+        Object.defineProperties(this, {
 
-                if (!isString(value)) {
-                  value = toString(value);
-                }
+          setItem: extendDefault({
+            value: function setItem (key, value) {
+              if (!isString(key)) {
+                key = toString(key);
+              }
 
-                db[key] = value;
-                w.name = stringify(db);
+              if (!isString(value)) {
+                value = toString(value);
               }
-            }),
-            getItem: extendDefault({
-              value: function getItem (key) {
-                if (!isString(key)) {
-                  key = toString(key);
-                }
 
-                var result = db[key];
-                if (result == null) return null;
-                return result;
-              }
-            }),
-            removeItem: extendDefault({
-              value: function removeItem (key) {
-                if (!isString(key)) {
-                  key = toString(key);
-                }
+              db[key] = value;
+              w.name = stringify(db);
+            }
+          }),
 
-                delete db[key];
-                w.name = stringify(db);
+          getItem: extendDefault({
+            value: function getItem (key) {
+              if (!isString(key)) {
+                key = toString(key);
               }
-            }),
-            clear: extendDefault({
-              value: function clear () {
-                db = {};
-                w.name = '';
-              }
-            }),
-            key: extendDefault({
-              value: function key (index) {
-                if (!arguments.length) {
-                  return new TypeError('Failed to execute \'key\' on \'Storage\': 1 argument required, but only 0 present.');
-                }
 
-                return Object.keys(db)[Number(index) || 0];
-              }
-            }),
-            length: extend({}, {
-              configurable: false,
-              enumerable: false,
-              get: function length () {
-                return Object.keys(db).length;
-              }
-            }),
-          });
-          return _storage;
-        } ())
-      }));
+              var result = db[key];
+              if (result == null) return null;
+              return result;
+            }
+          }),
 
-      GLOBAL.Storage.prototype = GLOBAL._Storage;
+          removeItem: extendDefault({
+            value: function removeItem (key) {
+              if (!isString(key)) {
+                key = toString(key);
+              }
+
+              delete db[key];
+              w.name = stringify(db);
+            }
+          }),
+
+          clear: extendDefault({
+            value: function clear () {
+              db = {};
+              w.name = '';
+            }
+          }),
+
+          key: extendDefault({
+            value: function key (index) {
+              if (!arguments.length) {
+                return new TypeError('Failed to execute \'key\' on \'Storage\': 1 argument required, but only 0 present.');
+              }
+
+              return Object.keys(db)[Number(index) || 0];
+            }
+          }),
+
+          length: extend({}, {
+            configurable: false,
+            enumerable: false,
+            get: function length () {
+              return Object.keys(db).length;
+            }
+          }),
+
+          constructor: extendDefault({
+            value: GLOBAL.Storage,
+            writable: true
+          })
+        });
+      };
+
       def(GLOBAL.Storage, 'name', extendDefault({
         value: 'Storage'
       }));
 
-      def(GLOBAL._Storage, 'constructor', extendDefault({
+      def(GLOBAL._Storage.prototype, 'constructor', extendDefault({
         value: GLOBAL.Storage,
         writable: true
       }));
 
+      GLOBAL.Storage.prototype = new GLOBAL._Storage;
       var localStorage = new GLOBAL.Storage;
       def(w, 'localStorage', extendDefault({
         value: localStorage
