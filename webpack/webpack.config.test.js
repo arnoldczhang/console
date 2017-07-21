@@ -4,6 +4,7 @@ module.exports = function () {
     entry: {
       console: './js/console.js',
       localStorage: './js/localStorage.js',
+      structs: './js/structs.js',
     },
     output: {
       path: './dist',
