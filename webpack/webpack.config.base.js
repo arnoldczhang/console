@@ -1,5 +1,6 @@
 var webpack = require('webpack');
-module.exports = function () {
+module.exports = function (config) {
+  config = config || {};
   return {
     entry: {
       console: './js/console.js',
@@ -14,7 +15,7 @@ module.exports = function () {
 
     plugins: [
       new webpack.optimize.UglifyJsPlugin({
-        mangle: true,
+        mangle: config.mangle || false,
         compress: {warnings: false}
       })
     ],

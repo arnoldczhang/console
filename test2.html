@@ -11,35 +11,64 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black">
     </head>
     <body>
-        <script type="text/javascript" src="./dist/console.min.js"></script>
-        <script type="text/javascript" src="./dist/localStorage.min.js"></script>
+        <!-- <script type="text/javascript" src="./dist/console.min.js"></script> -->
+        <!-- <script type="text/javascript" src="./dist/localStorage.min.js"></script> -->
+        <script type="text/javascript" src="./dist/structs.min.js"></script>
         <div id="container"></div>
         <script type="text/javascript">
 
             // console
-            var c = {a: 123, b: {c: ['a', 'b', 'c']}};
-            function d (a, b, c, d) {
-                return a + b;
-            };
-            console.log(document.body);
-            console.log('aa', 'b', c, d);
-            console.log('aa');
-            console.warn('aa');
-            console.error('aa');
-            try {
-                var aa = c.b.a;
-            } catch (err) {
-                console.log(err);
-            }
+            // var c = {a: 123, b: {c: ['a', 'b', 'c']}};
+            // function d (a, b, c, d) {
+            //     return a + b;
+            // };
+            // console.log(document.body);
+            // console.log('aa', 'b', c, d);
+            // console.log('aa');
+            // console.warn('aa');
+            // console.error('aa');
+            // try {
+            //     var aa = c.b.a;
+            // } catch (err) {
+            //     console.log(err);
+            // }
 
             // localStorage
-            localStorage.setItem('a', JSON.stringify({a:1}));
-            console.log(window.name);
-            console.log(1, localStorage.getItem('a') === JSON.stringify({a:1}));
-            localStorage.removeItem('a');
-            console.log(2, localStorage.getItem('a') == null);
-            localStorage.clear();
-            console.log(3, window.name === '');
+            // localStorage.setItem('a', JSON.stringify({a:1}));
+            // console.log(window.name);
+            // console.log(1, localStorage.getItem('a') === JSON.stringify({a:1}));
+            // localStorage.removeItem('a');
+            // console.log(2, localStorage.getItem('a') == null);
+            // localStorage.clear();
+            // console.log(3, window.name === '');
+
+
+
+
+
+
+
+
+
+
+
+            var Collection = Structs.Collection;
+            var List = Structs.List;
+
+            var col = Collection(1, Collection([4, 5, 6]), 3);
+            var list = List(1,2,3);
+
+
+
+            // var col = Collection(1,2,3);
+            // var col2 = Collection([1,2,3]);
+            // var col3 = Collection([1]);
+            // var col4 = Collection(1);
+            // console.log(col, list);
+            // console.log(col2);
+            // console.log(col3);
+            // console.log(col4);
+
         </script>
     </body>
 </html>
