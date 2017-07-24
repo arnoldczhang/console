@@ -10,12 +10,10 @@
         && define.amd
           ? define(factory)
           : global.Structs = factory(global);
-} (window || this, function (w) {
+} (this, function (w) {
   'use strict'
 
   var DOC = w.document,
-    NAME = w.name,
-    BODY = DOC.body,
     ISDEBUG = false
     ;
 
@@ -36,8 +34,11 @@
   };
 
   var ERROR = {
-    GETIN: function (index) {
+    GETFN: function (index) {
       return 'value at [{{index}}] does not have a `.get` method'.replace(/{{index}}/, index); 
+    },
+    SETFN: function (index) {
+      return 'value at [{{index}}] does not have a `.set` method'.replace(/{{index}}/, index); 
     },
     SETIN: 'Expect the type of arguments[0] to be `array`',
   };
@@ -73,6 +74,10 @@
     return typeof str === 'string';
   };
 
+  function isNumber (num) {
+    return typeof num === 'number';
+  };
+
   var isArray = Array.isArray;
 
   function isArrayLike (obj) {
@@ -96,6 +101,23 @@
 
   function toString (obj) {
     return ({}.toString).call(obj);
+  };
+
+  function toIndex (num, len) {
+    var intIndex;
+    if (isNumber(num)) {
+      return num >= 0 ? num : len + num;
+    }
+
+    else {
+      intIndex = num >>> 0;
+      
+      if ('' + intIndex !== num || intIndex === Math.pow(2, 32) - 1) {
+        return NaN;
+      }
+
+      return intIndex;
+    }
   };
 
   function upper (str) {
@@ -153,18 +175,45 @@
       ;
 
     function set (index, value) {
-      var isSetable = this.isCollection || this.isList,
-        newArray
+      index = toIndex(index, this._array.length);
+      var argsLen = arguments.length, 
+        isSetable = this.isCollection || this.isList,
+        newArray,
+        newLen,
+        lastIndex
         ;
         
       if (isSetable) {
         newArray = toArray(this._array);
-        newArray[index] = value;
+        newLen = newArray.length;
+        lastIndex = newLen - 1;
+
+        if (argsLen === 1) {
+
+          if (index === lastIndex) {
+            newArray.length -= 1;
+          }
+
+          else if (index > lastIndex) {
+            newArray.length = index;
+          }
+
+          else {
+            newArray[index] = void 0;
+          }
+
+        }
+
+        else {
+          newArray[index] = value;
+        }
+
         return this._fn(newArray);
       }
     };
 
     function get (index) {
+      index = toIndex(index, this._array.length);
       var isSetable = this.isCollection || this.isList;
       if (isSetable) {
         return this._array[index];
@@ -175,16 +224,24 @@
     function setIn (arr, value) {
       if (isArray(arr)) {
         var lastIndex = arr.pop();
-        var result = arr.reduce(function (result, next, index) {
-          if (result.get) {
-            return result.get(next);
+        var result = arr.reduce(function (res, next, index) {
+          if (res.get) {
+            return res.get(next);
           }
 
           else {
-            throw new Error(ERROR.GETIN(index));
+            throw new Error(ERROR.GETFN(index));
           }
-        }, this);
-        result.set(lastIndex, value);
+        }, this)
+
+        if (result && result.set) {
+          return result.set(lastIndex, value);
+        }
+
+        else {
+          throw new Error(ERROR.SETFN(lastIndex));
+        }
+
       }
 
       else {
@@ -200,7 +257,7 @@
           }
 
           else {
-            throw new Error(ERROR.GETIN(index));
+            throw new Error(ERROR.GETFN(index));
           }
         }, this);
       }
@@ -231,6 +288,11 @@
     if (isArrayLike(list)) {
       list = list.length > 1 ? toArray(list) : isArray(first) ? first : [first];
       inst._array = list;
+      def(inst, 'size', {
+        get: function () {
+          return list.length;
+        }
+      });
     }
   };
 
