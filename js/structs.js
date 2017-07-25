@@ -20,6 +20,7 @@
   var stringify = JSON.stringify,
     parse = JSON.parse,
     def = Object.defineProperty,
+    defs = Object.defineProperties,
     Structs = {}
     ;
 
@@ -31,6 +32,11 @@
   var PROTO = {
     COLLECTION: {},
     LIST: {},
+  };
+
+  var ENUM = {
+    VOID0: undefined,
+    NULL: null,
   };
 
   var ERROR = {
@@ -55,7 +61,7 @@
       source = args.slice(1);
 
     if (Object.assign) {
-      return Object.assign.apply(null, arguments);
+      return Object.assign.apply(ENUM.NULL, arguments);
     } 
 
     else {
@@ -78,10 +84,14 @@
     return typeof num === 'number';
   };
 
+  function isObject (obj) {
+    return typeof obj === 'object';
+  };
+
   var isArray = Array.isArray;
 
   function isArrayLike (obj) {
-    if (obj == null) return false;
+    if (obj == ENUM.NULL) return false;
     var length = "length" in obj && obj.length,
       type = typeof obj;
 
@@ -155,15 +165,85 @@
       ;
 
     if (supProto) {
-      supProto = Object.create(supProto || null);
+      supProto = Object.create(supProto || ENUM.NULL);
       PROTO[name] = supProto;
     }
 
     proto = className.prototype = Object(supProto || PROTO[name]);
-    proto.constructor = className;
-    proto._type = TYPE[name];
-    proto['is' + capitalize(name)] = true;
+    def(proto, 'is' + capitalize(name), {
+      value: true,
+      writable: false,
+    });
+    
+    defs(proto, {
+      constructor: {
+        value: className,
+        writable: false,
+      },
+      _type: {
+        value: TYPE[name],
+        writable: false,
+      },
+      isSetable: {
+        value: proto.isCollection || proto.isList,
+        writable: false,
+      }
+    });
     return proto;
+  };
+
+  function deepEqual (target, other) {
+    var result;
+    if (target === other) return true;
+
+    if (target._type && other._type) {
+      return target.equals(other);
+    }
+
+    if (toString(target) !== toString(other)) {
+      return false;
+    }
+
+    if (!isObject(target) && !isObject(other)) {
+      return target === other;
+    }
+
+    else {
+      result = forEach(target, function (tCh, index) {
+        var oCh = other[index];
+
+        if (!deepEqual(tCh, oCh)) {
+          return false;          
+        }
+      });
+      return result === ENUM.VOID0 ? true : result;
+    }
+
+  };
+
+  function forEach (arr, cb, ctx) {
+    var keyArr,
+      key,
+      result
+      ;
+
+    if (isArrayLike(arr)) {
+
+      for (var i = 0, len = arr.length; i < len; i++) {
+        result = cb.call(ctx || this, arr[i], i, arr);
+        if (result != ENUM.NULL) return result;
+      }
+    }
+
+    else if (isObject(arr)) {
+      keyArr = Object.keys(arr);
+
+      for (var i = 0, len = keyArr.length; i < len; i++) {
+        key = keyArr[i];
+        result = cb.call(ctx || this, arr[key], key, arr);
+        if (result != ENUM.NULL) return result;
+      }
+    }
   };
 
   /**
@@ -175,20 +255,23 @@
       ;
 
     function set (index, value) {
-      index = toIndex(index, this._array.length);
       var argsLen = arguments.length, 
-        isSetable = this.isCollection || this.isList,
         newArray,
-        newLen,
-        lastIndex
+        arrLen = this.size,
+        lastIndex = arrLen - 1,
+        indexInArr = index >= 0 && index < arrLen
         ;
+      index = toIndex(index, arrLen);
         
-      if (isSetable) {
-        newArray = toArray(this._array);
-        newLen = newArray.length;
-        lastIndex = newLen - 1;
+      if (this.isSetable) {
 
-        if (argsLen === 1) {
+        if (indexInArr && this.get(index) === value) {
+          return this;
+        }
+
+        newArray = toArray(this._array);
+
+       if (argsLen === 1) {
 
           if (index === lastIndex) {
             newArray.length -= 1;
@@ -199,7 +282,7 @@
           }
 
           else {
-            newArray[index] = void 0;
+            newArray[index] = ENUM.VOID0;
           }
 
         }
@@ -208,17 +291,21 @@
           newArray[index] = value;
         }
 
-        return this._fn(newArray);
       }
+
+      else {
+        // TODO
+      }
+      
+      return this._fn(newArray);
     };
 
     function get (index) {
-      index = toIndex(index, this._array.length);
-      var isSetable = this.isCollection || this.isList;
-      if (isSetable) {
+      index = toIndex(index, this.size);
+      if (this.isSetable) {
         return this._array[index];
       }
-      return null;
+      return ENUM.NULL;
     };
 
     function setIn (arr, value) {
@@ -232,7 +319,7 @@
           else {
             throw new Error(ERROR.GETFN(index));
           }
-        }, this)
+        }, this);
 
         if (result && result.set) {
           return result.set(lastIndex, value);
@@ -267,14 +354,106 @@
       }
     };
 
-    function equals () {
+    function equals (struct) {
+      var args = arguments,
+        argsLen = args.length,
+        thisValues,
+        thisValue,
+        structValues,
+        structValue,
+        result
+        ;
 
+      if (!argsLen) return false;
+
+      if (this === struct) {
+        return true;
+      }
+
+      if (this._type && struct._type) {
+
+        if (this._type !== struct._type) {
+          return false;
+        }
+
+        if (this.isSetable) {
+
+          if (this.size !== struct.size) {
+            return false;
+          }
+
+          values = this.values();
+          structValues = struct.values();
+
+          while ((thisValue = values.next()) && !thisValue.done) {
+            thisValue = thisValue.value;
+            structValue = structValues.next().value;
+
+            if (thisValue && structValue 
+              && thisValue._type && structValue._type) {
+
+              if (!thisValue.equals(structValue)) {
+                return false;
+              }
+
+            }
+
+            else if (!deepEqual(thisValue, structValue)) {
+              return false;
+            }
+
+          }
+
+          return true;
+        }
+
+        else {
+          // TODO
+        }
+
+      }
+
+      else {
+        return false;
+      }
+
+    };
+
+    function each (cb) {
+      return forEach(this._array, cb, this);
+    };
+
+    function keys () {
+      if (this.isSetable) {
+        var keyArr = Array(this.size);
+        this.each(function (ch, index) {
+          keyArr[index] = index;
+        });
+        return _Iterator(keyArr);
+      }
+
+      else {
+        // TODO
+      }
+    };
+
+    function values () {
+      if (this.isSetable) {
+        return _Iterator(this._array);
+      }
+
+      else {
+        // TODO
+      }
     };
 
     collectProto.set = set;
     collectProto.get = get;
     collectProto.setIn = setIn;
     collectProto.getIn = getIn;
+    collectProto.keys = keys;
+    collectProto.values = values;
+    collectProto.each = each;
     collectProto.is = collectProto.equals = equals;
   };
 
@@ -286,7 +465,15 @@
       ;
 
     if (isArrayLike(list)) {
-      list = list.length > 1 ? toArray(list) : isArray(first) ? first : [first];
+
+      if (first == ENUM.NULL) {
+        inst._array = [];
+      }
+
+      else {
+        list = list.length > 1 ? toArray(list) : isArray(first) ? first : [first];
+      }
+
       inst._array = list;
       def(inst, 'size', {
         get: function () {
@@ -295,6 +482,40 @@
       });
     }
   };
+
+  function initIterator () {
+    function Iterator () {};
+    var proto = Iterator.prototype;
+    function next () {
+      return {
+        value: this._iteratee[this._index++],
+        done: this._index > this._size,
+      };
+    };
+    proto.next = next;
+    return proto;
+  };
+
+  var _Iterator = (function () {
+    var proto = initIterator();
+    return function (arr) {
+      if (isArrayLike(arr)) {
+        var inst = Object.create(proto);
+        inst._index = 0;
+        defs(inst, {
+          _size: {
+            value: arr.length,
+            writable: false,
+          },
+          _iteratee: {
+            value: arr,
+            writable: false,
+          }
+        });
+        return inst;
+      }
+    };
+  } ());
 
   var _Collection = (function () {
     function Collection () {};
@@ -310,6 +531,11 @@
   var _List = (function () {
     function List () {};
     var proto = inherit(List, PROTO.COLLECTION);
+    
+    function isList (target) {
+      return target.isList;
+    };
+    List.isList = isList;
     proto._fn = function () {
       var inst = Object.create(proto);
       initCollection(inst, arguments);
