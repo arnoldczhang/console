@@ -14,13 +14,15 @@
   'use strict'
 
   var DOC = w.document,
-    ISDEBUG = false
+    ISDEBUG = false,
+    ARR = []
     ;
 
   var stringify = JSON.stringify,
     parse = JSON.parse,
     def = Object.defineProperty,
     defs = Object.defineProperties,
+    $reduce = ARR.reduce,
     Structs = {}
     ;
 
@@ -46,7 +48,7 @@
     SETFN: function (index) {
       return 'value at [{{index}}] does not have a `.set` method'.replace(/{{index}}/, index); 
     },
-    SETIN: 'Expect the type of arguments[0] to be `array`',
+    ARRAY: 'Expect the type of arguments[0] to be `array`',
   };
 
   function capitalize (str) {
@@ -221,6 +223,14 @@
 
   };
 
+  function shallowEqual (target, other) {
+    if (target._type && other._type) {
+      return target.equals(other);
+    }
+
+    return target === other;
+  };
+
   function forEach (arr, cb, ctx) {
     var keyArr,
       key,
@@ -233,6 +243,7 @@
         result = cb.call(ctx || this, arr[i], i, arr);
         if (result != ENUM.NULL) return result;
       }
+
     }
 
     else if (isObject(arr)) {
@@ -243,7 +254,12 @@
         result = cb.call(ctx || this, arr[key], key, arr);
         if (result != ENUM.NULL) return result;
       }
+
     }
+  };
+
+  function createHashCode () {
+    return Math.random().toString(36).slice(2);
   };
 
   /**
@@ -305,6 +321,11 @@
       if (this.isSetable) {
         return this._array[index];
       }
+
+      else {
+        // TODO
+      }
+
       return ENUM.NULL;
     };
 
@@ -332,13 +353,64 @@
       }
 
       else {
-        return new Error(ERROR.SETIN);
+        return new Error(ERROR.ARRAY);
       }
     };
 
     function getIn (arr) {
       if (isArray(arr)) {
-        return arr.reduce(function (result, next, index) {
+
+        if (this.isSetable) {
+          return arr.reduce(function (result, next, index) {
+            if (result.get) {
+              return result.get(next);
+            }
+
+            else {
+              throw new Error(ERROR.GETFN(index));
+            }
+          }, this);
+        }
+
+        else {
+          // TODO
+        }
+        
+      }
+
+      else {
+        throw new Error(ERROR.ARRAY);
+      }
+    };
+
+    function has (index) {
+      if (this.isSetable) {
+        return index < this.size && index in this._array;
+      }
+
+      else {
+        // TODO
+      }
+    };
+
+    function includes (value) {
+      if (!arguments.length) return false;
+      var result = this.each(function (child) {
+        if (shallowEqual(child, value)) {
+          return true;
+        }
+      });
+      return result != ENUM.VOID0;
+    };
+
+    function hasIn (arr) {
+      var lastIndex,
+        len = arr.length,
+        result
+        ;
+      if (isArray(arr)) {
+        lastIndex = arr.pop();
+        result = arr.reduce(function (result, next, index) {
           if (result.get) {
             return result.get(next);
           }
@@ -347,10 +419,19 @@
             throw new Error(ERROR.GETFN(index));
           }
         }, this);
+
+        if (result && result.has) {
+          return result.has(lastIndex);
+        }
+
+        else {
+          throw new Error(ERROR.GETFN(len - 1));
+        }
+
       }
 
       else {
-        throw new Error(ERROR.SETIN);
+        throw new Error(ERROR.ARRAY);
       }
     };
 
@@ -414,13 +495,20 @@
       }
 
       else {
-        return false;
+        return deepEqual(this, struct);
       }
 
     };
 
     function each (cb) {
-      return forEach(this._array, cb, this);
+      if (this.isSetable) {
+        return forEach(this._array, cb, this);
+      }
+
+      else {
+        // TODO
+      }
+
     };
 
     function keys () {
@@ -435,6 +523,7 @@
       else {
         // TODO
       }
+
     };
 
     function values () {
@@ -445,7 +534,55 @@
       else {
         // TODO
       }
+
     };
+
+    function hashCode () {
+      return this.hash;
+    };
+
+    function first () {
+      if (this.isSetable) {
+        return this._array[0];
+      }
+
+      else {
+        // TODO
+      }
+
+    };
+
+    function last () {
+      if (this.isSetable) {
+        return this._array[this.size - 1];
+      }
+
+      else {
+        // TODO
+      }
+
+    };
+
+    function reduce (cb, initValue, ctx) {
+      ctx = ctx || this;
+      var applyList = [cb.bind(ctx)];
+
+      if (initValue !== ENUM.VOID0) {
+        applyList.push(initValue);
+      }
+
+      if (this.isSetable) {
+        return $reduce.apply(this._array, applyList);
+      }
+
+      else {
+        // TODO
+      }
+    };
+
+    function update () {
+
+    }
 
     collectProto.set = set;
     collectProto.get = get;
@@ -454,6 +591,13 @@
     collectProto.keys = keys;
     collectProto.values = values;
     collectProto.each = each;
+    collectProto.has = has;
+    collectProto.hasIn = hasIn;
+    collectProto.includes = includes;
+    collectProto.hashCode = hashCode;
+    collectProto.first = first;
+    collectProto.last = last;
+    collectProto.reduce = reduce;
     collectProto.is = collectProto.equals = equals;
   };
 
@@ -471,13 +615,19 @@
       }
 
       else {
-        list = list.length > 1 ? toArray(list) : isArray(first) ? first : [first];
+        list = list.length > 1 ? toArray(list) : isArray(first) ? toArray(first) : [first];
       }
 
       inst._array = list;
-      def(inst, 'size', {
-        get: function () {
-          return list.length;
+      defs(inst, {
+        size: {
+          get: function () {
+            return list.length;
+          },
+        },
+        hash: {
+          value: createHashCode(),
+          writable: false,
         }
       });
     }
@@ -531,7 +681,7 @@
   var _List = (function () {
     function List () {};
     var proto = inherit(List, PROTO.COLLECTION);
-    
+
     function isList (target) {
       return target.isList;
     };

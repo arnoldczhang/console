@@ -35,6 +35,11 @@ describe('structs', function () {
         expect(col4.size).to.be.equal(1);
 
         var list = List([1,2,{a: 1}, 3,,4]);
+        var list2 = list.set(1, 2);
+        expect(list === list2).to.be.true;
+        expect(list.equals(list2)).to.be.true;
+
+        var list = List([1,2,{a: 1}, 3,,4]);
         var list2 = List([1,2,{a: 1}, 3,,4]);
         expect(list.equals(list2)).to.be.true;
 
@@ -42,6 +47,24 @@ describe('structs', function () {
         list = List([1, simple,3,4,,{a:1}]);
         list2 = List([1, simple,3,4,,{a:1}]);
         expect(list.equals(list2)).to.be.true;
+
+        var list = List([1,2, [1]]);
+        expect(list.includes([1])).to.be.false;
+        var li = List(1,2,3);
+        var list = List(li, 2, 3, 4);
+        expect(list.includes(li)).to.be.true;
+
+        var list = List(1,2,3,4);
+        expect(list.reduce(function (a,b) {
+            return a + b + this.a;
+        }, 100, {
+            a: 100
+        })).to.be.equal(510);
+
+        var li = List([3]);
+        var list = List([1, 2, li]);
+        expect(list.first()).to.be.equal(1);
+        expect(list.last()).to.be.equal(li);
         done();
     });
 });
