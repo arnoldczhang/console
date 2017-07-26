@@ -65,6 +65,21 @@ describe('structs', function () {
         var list = List([1, 2, li]);
         expect(list.first()).to.be.equal(1);
         expect(list.last()).to.be.equal(li);
+
+        var list = List([1,2, [1]]);
+        var list2 = list.update(1, function (ch) {
+            return ch * 100;
+        });
+        expect(list2.get(1)).to.be.equal(200);
+        var list2 = list.update(function (ch) {
+            return ch.get(2);
+        });
+        expect(list2).to.be.deep.equal([1]);
+
+        var list2 = list.update(1, 'aaa', function (ch) {
+        });
+        expect(list2.get(1)).to.be.equal('aaa');
+
         done();
     });
 });

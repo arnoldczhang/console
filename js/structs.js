@@ -42,13 +42,17 @@
   };
 
   var ERROR = {
+    FN: function (method, index) {
+      return ('value at [{{index}}] does not have a `.' + method + '` method').replace(/{{index}}/, index);
+    },
     GETFN: function (index) {
-      return 'value at [{{index}}] does not have a `.get` method'.replace(/{{index}}/, index); 
+      return this.FN('get', index);
     },
     SETFN: function (index) {
-      return 'value at [{{index}}] does not have a `.set` method'.replace(/{{index}}/, index); 
+      return this.FN('set', index);
     },
     ARRAY: 'Expect the type of arguments[0] to be `array`',
+    PARAM: 'the type of param(s) is not matched',
   };
 
   function capitalize (str) {
@@ -82,6 +86,11 @@
     return typeof str === 'string';
   };
 
+  function isVoid0 (obj, strict) {
+    if (!strict) return obj == ENUM.VOID0;
+    return obj === ENUM.VOID0;
+  }
+
   function isNumber (num) {
     return typeof num === 'number';
   };
@@ -90,10 +99,14 @@
     return typeof obj === 'object';
   };
 
+  function isFunction (fn) {
+    return toString(fn) === '[object Function]';
+  };
+
   var isArray = Array.isArray;
 
   function isArrayLike (obj) {
-    if (obj == ENUM.NULL) return false;
+    if (isVoid0(obj)) return false;
     var length = "length" in obj && obj.length,
       type = typeof obj;
 
@@ -218,7 +231,7 @@
           return false;          
         }
       });
-      return result === ENUM.VOID0 ? true : result;
+      return isVoid0(result) ? true : result;
     }
 
   };
@@ -241,7 +254,7 @@
 
       for (var i = 0, len = arr.length; i < len; i++) {
         result = cb.call(ctx || this, arr[i], i, arr);
-        if (result != ENUM.NULL) return result;
+        if (!isVoid0(result)) return result;
       }
 
     }
@@ -252,7 +265,7 @@
       for (var i = 0, len = keyArr.length; i < len; i++) {
         key = keyArr[i];
         result = cb.call(ctx || this, arr[key], key, arr);
-        if (result != ENUM.NULL) return result;
+        if (!isVoid0(result)) return result;
       }
 
     }
@@ -270,7 +283,7 @@
       listProto = PROTO.LIST
       ;
 
-    function set (index, value) {
+    function set (index, value, deep) {
       var argsLen = arguments.length, 
         newArray,
         arrLen = this.size,
@@ -280,6 +293,10 @@
       index = toIndex(index, arrLen);
         
       if (this.isSetable) {
+
+        if (deep) {
+          return this._array[index] = value;
+        }
 
         if (indexInArr && this.get(index) === value) {
           return this;
@@ -330,6 +347,8 @@
     };
 
     function setIn (arr, value) {
+      var newStruct = this._fn(toArray(this._array))
+        ;
       if (isArray(arr)) {
         var lastIndex = arr.pop();
         var result = arr.reduce(function (res, next, index) {
@@ -340,10 +359,12 @@
           else {
             throw new Error(ERROR.GETFN(index));
           }
-        }, this);
+        }, newStruct);
 
         if (result && result.set) {
-          return result.set(lastIndex, value);
+          // FIXME
+          result.set(lastIndex, value, true);
+          return newStruct;
         }
 
         else {
@@ -400,7 +421,7 @@
           return true;
         }
       });
-      return result != ENUM.VOID0;
+      return !isVoid0(result);
     };
 
     function hasIn (arr) {
@@ -567,7 +588,7 @@
       ctx = ctx || this;
       var applyList = [cb.bind(ctx)];
 
-      if (initValue !== ENUM.VOID0) {
+      if (!isVoid0(initValue)) {
         applyList.push(initValue);
       }
 
@@ -580,9 +601,78 @@
       }
     };
 
-    function update () {
+    function update (key, defaultValue, iteratee) {
+      var args = arguments,
+        argLen = args.length,
+        value = this,
+        result
+        ;
 
-    }
+      if (argLen === 1) {
+
+        if (isFunction(key)) {
+          iteratee = key;
+          key = defaultValue = ENUM.VOID0;
+        }
+
+        else {
+          throw new Error(ERROR.PARAM);
+        }
+        
+      }
+
+      else if (argLen === 2 && isFunction(defaultValue)) {
+        iteratee = defaultValue;
+        defaultValue = ENUM.VOID0;
+      }
+
+      else if (argLen >= 3) {
+
+        if (!isFunction(iteratee)) {
+          throw new Error(ERROR.PARAM);
+        }
+
+      }
+
+      if (!isVoid0(key)) {
+        value = this.get(key);
+        result = iteratee(value);
+        return this.set(key, isVoid0(result, true) ? defaultValue : result);
+      }
+
+      return iteratee(value);
+    };
+
+    function updateIn (arr, defaultValue, iteratee) {
+      var args = arguments,
+        argLen = args.length,
+        value,
+        result
+        ;
+
+      if (isArray(arr)) {
+
+        if (isFunction(defaultValue)) {
+          iteratee = defaultValue;
+          defaultValue = ENUM.VOID0;
+        }
+
+        if (isFunction(iteratee)) {
+          value = this.getIn(arr);
+          result = iteratee(value);
+          return this.setIn(arr, isVoid0(result, true) ? defaultValue : result);
+        }
+
+        else {
+          throw new Error(ERROR.PARAM);
+        }
+
+      }
+
+      else {
+        throw new Error(ERROR.PARAM);
+      }
+    };
 
     collectProto.set = set;
     collectProto.get = get;
@@ -598,6 +688,8 @@
     collectProto.first = first;
     collectProto.last = last;
     collectProto.reduce = reduce;
+    collectProto.update = update;
+    collectProto.updateIn = updateIn;
     collectProto.is = collectProto.equals = equals;
   };
 
@@ -610,7 +702,7 @@
 
     if (isArrayLike(list)) {
 
-      if (first == ENUM.NULL) {
+      if (isVoid0(first)) {
         inst._array = [];
       }
 
