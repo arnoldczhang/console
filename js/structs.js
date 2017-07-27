@@ -29,11 +29,13 @@
   var TYPE = {
     COLLECTION: 'COLLECTION',
     LIST: 'LIST',
+    MAP: 'MAP',
   };
 
   var PROTO = {
     COLLECTION: {},
     LIST: {},
+    MAP: {},
   };
 
   var ENUM = {
@@ -43,7 +45,9 @@
 
   var ERROR = {
     FN: function (method, index) {
-      return ('value at [{{index}}] does not have a `.' + method + '` method').replace(/{{index}}/, index);
+      return 'value at [{{index}}] does not have a `.{{method}}` method'
+        .replace(/{{method}}/, method)
+        .replace(/{{index}}/, index);
     },
     GETFN: function (index) {
       return this.FN('get', index);
@@ -52,9 +56,18 @@
       return this.FN('set', index);
     },
     ARRAY: 'Expect the type of arguments[0] to be `array`',
-    PARAM: 'the type of param(s) is not matched',
+    PARAM: function (index, type) {
+      return 'args[{{index}}] is not type of {{type}}'
+        .replace(/{{index}}/, index)
+        .replace(/{{type}}/, type);
+    },
+    EXPECTARR: 'Expected Array or collection object of values: [object Object]',
+    EXPECTOBJ: 'Expected Object or map object of values: [object Array]',
   };
 
+  /*
+  ** utils
+   */
   function capitalize (str) {
     if (isString(str)) {
       return upper(str[0]) + lower(str.substr(1));
@@ -95,8 +108,9 @@
     return typeof num === 'number';
   };
 
-  function isObject (obj) {
-    return typeof obj === 'object';
+  function isObject (obj, deep) {
+    if (!deep) return typeof obj === 'object';
+    return toString(obj) === '[object Object]';
   };
 
   function isFunction (fn) {
@@ -146,16 +160,12 @@
   };
 
   function upper (str) {
-    if (isString(str)) {
-      return str.toUpperCase();
-    }
+    if (isString(str)) return str.toUpperCase();
     return '';
   };
 
   function lower (str) {
-    if (isString(str)) {
-      return str.toLowerCase();
-    }
+    if (isString(str)) return str.toLowerCase();
     return '';
   }; 
 
@@ -233,14 +243,10 @@
       });
       return isVoid0(result) ? true : result;
     }
-
   };
 
   function shallowEqual (target, other) {
-    if (target._type && other._type) {
-      return target.equals(other);
-    }
-
+    if (target._type && other._type) return target.equals(other);
     return target === other;
   };
 
@@ -256,7 +262,6 @@
         result = cb.call(ctx || this, arr[i], i, arr);
         if (!isVoid0(result)) return result;
       }
-
     }
 
     else if (isObject(arr)) {
@@ -267,7 +272,6 @@
         result = cb.call(ctx || this, arr[key], key, arr);
         if (!isVoid0(result)) return result;
       }
-
     }
   };
 
@@ -275,15 +279,88 @@
     return Math.random().toString(36).slice(2);
   };
 
+  function getObjectIterator (obj) {
+    var keys,
+      keyLen,
+      values,
+      entries
+      ;
+
+    if (isObject(obj, true)) {
+      keys = Object.keys(obj);
+      keyLen = keys.length;
+      values = Array(keyLen);
+      entries = Array(keyLen);
+
+      forEach(keys, function (key, index) {
+        var value = obj[key];
+        values[index] = value;
+        entries[index] = [key, value];
+      });
+
+      return {
+        keys: keys,
+        values: values,
+        entries: entries,
+      };
+    }
+
+    else {
+      throw new Error(ERROR.PARAM(0, 'object'));
+    }
+  };
+
   /**
-   * 
+   * main funcitons
    */
+  
+  function reduceSet (struct, keyArr, value) {
+    if (!keyArr.length) return struct;
+    var key = keyArr.shift(),
+      result = struct.get(key)
+      ;
+
+    if (result.get) {
+      return struct.set(key, reduceSet(result, keyArr, value));
+    }
+
+    else if (!keyArr.length) {
+      return struct.set(key, value);
+    }
+
+    else {
+      throw new Error(ERROR.GETFN(key));
+    }
+  };
+
+  function newStruct (proto) {
+    return function () {
+      var inst = Object.create(proto);
+      initCollection(inst, arguments);
+      return inst;
+    };
+  };
+
+  function checkDataType (type, firstObj, list) {
+    switch (type) {
+      case TYPE.COLLECTION: {
+
+      }
+      case TYPE.LIST: {
+
+      }
+      case TYPE.MAP: {
+
+      }
+    };
+  };
+
   function initPrototype () {
     var collectProto = PROTO.COLLECTION,
       listProto = PROTO.LIST
       ;
 
-    function set (index, value, deep) {
+    function set (index, value) {
       var argsLen = arguments.length, 
         newArray,
         arrLen = this.size,
@@ -291,12 +368,12 @@
         indexInArr = index >= 0 && index < arrLen
         ;
       index = toIndex(index, arrLen);
+
+      if (isNaN(index)) {
+        throw new Error(ERROR.PARAM(0, 'number'));
+      }
         
       if (this.isSetable) {
-
-        if (deep) {
-          return this._array[index] = value;
-        }
 
         if (indexInArr && this.get(index) === value) {
           return this;
@@ -317,13 +394,11 @@
           else {
             newArray[index] = ENUM.VOID0;
           }
-
         }
 
         else {
           newArray[index] = value;
         }
-
       }
 
       else {
@@ -347,30 +422,9 @@
     };
 
     function setIn (arr, value) {
-      var newStruct = this._fn(toArray(this._array))
-        ;
       if (isArray(arr)) {
-        var lastIndex = arr.pop();
-        var result = arr.reduce(function (res, next, index) {
-          if (res.get) {
-            return res.get(next);
-          }
-
-          else {
-            throw new Error(ERROR.GETFN(index));
-          }
-        }, newStruct);
-
-        if (result && result.set) {
-          // FIXME
-          result.set(lastIndex, value, true);
-          return newStruct;
-        }
-
-        else {
-          throw new Error(ERROR.SETFN(lastIndex));
-        }
-
+        if (!arr.length) return value;
+        return reduceSet(this, arr, value);
       }
 
       else {
@@ -396,7 +450,6 @@
         else {
           // TODO
         }
-        
       }
 
       else {
@@ -417,6 +470,7 @@
     function includes (value) {
       if (!arguments.length) return false;
       var result = this.each(function (child) {
+
         if (shallowEqual(child, value)) {
           return true;
         }
@@ -429,9 +483,11 @@
         len = arr.length,
         result
         ;
+
       if (isArray(arr)) {
         lastIndex = arr.pop();
         result = arr.reduce(function (result, next, index) {
+
           if (result.get) {
             return result.get(next);
           }
@@ -448,7 +504,6 @@
         else {
           throw new Error(ERROR.GETFN(len - 1));
         }
-
       }
 
       else {
@@ -491,19 +546,19 @@
             thisValue = thisValue.value;
             structValue = structValues.next().value;
 
-            if (thisValue && structValue 
-              && thisValue._type && structValue._type) {
+            if (thisValue 
+              && structValue 
+              && thisValue._type 
+              && structValue._type) {
 
               if (!thisValue.equals(structValue)) {
                 return false;
               }
-
             }
 
             else if (!deepEqual(thisValue, structValue)) {
               return false;
             }
-
           }
 
           return true;
@@ -512,13 +567,11 @@
         else {
           // TODO
         }
-
       }
 
       else {
         return deepEqual(this, struct);
       }
-
     };
 
     function each (cb) {
@@ -529,7 +582,6 @@
       else {
         // TODO
       }
-
     };
 
     function keys () {
@@ -544,7 +596,6 @@
       else {
         // TODO
       }
-
     };
 
     function values () {
@@ -555,7 +606,20 @@
       else {
         // TODO
       }
+    };
 
+    function entries () {
+      if (this.isSetable) {
+        var keyArr = Array(this.size);
+        this.each(function (ch, index) {
+          keyArr[index] = [index, ch];
+        });
+        return _Iterator(keyArr);
+      }
+
+      else {
+        // TODO
+      }
     };
 
     function hashCode () {
@@ -570,7 +634,6 @@
       else {
         // TODO
       }
-
     };
 
     function last () {
@@ -581,7 +644,6 @@
       else {
         // TODO
       }
-
     };
 
     function reduce (cb, initValue, ctx) {
@@ -601,7 +663,7 @@
       }
     };
 
-    function update (key, defaultValue, iteratee) {
+    function update (key, defaultValue, iterator) {
       var args = arguments,
         argLen = args.length,
         value = this,
@@ -611,39 +673,34 @@
       if (argLen === 1) {
 
         if (isFunction(key)) {
-          iteratee = key;
+          iterator = key;
           key = defaultValue = ENUM.VOID0;
         }
 
         else {
-          throw new Error(ERROR.PARAM);
+          throw new Error(ERROR.PARAM(0, 'function'));
         }
-        
       }
 
       else if (argLen === 2 && isFunction(defaultValue)) {
-        iteratee = defaultValue;
+        iterator = defaultValue;
         defaultValue = ENUM.VOID0;
       }
 
-      else if (argLen >= 3) {
-
-        if (!isFunction(iteratee)) {
-          throw new Error(ERROR.PARAM);
-        }
-
+      if (!isFunction(iterator)) {
+        throw new Error(ERROR.PARAM(2, 'function'));
       }
 
       if (!isVoid0(key)) {
         value = this.get(key);
-        result = iteratee(value);
+        result = iterator(value);
         return this.set(key, isVoid0(result, true) ? defaultValue : result);
       }
 
-      return iteratee(value);
+      return iterator(value);
     };
 
-    function updateIn (arr, defaultValue, iteratee) {
+    function updateIn (arr, defaultValue, iterator) {
       var args = arguments,
         argLen = args.length,
         value,
@@ -653,24 +710,23 @@
       if (isArray(arr)) {
 
         if (isFunction(defaultValue)) {
-          iteratee = defaultValue;
+          iterator = defaultValue;
           defaultValue = ENUM.VOID0;
         }
 
-        if (isFunction(iteratee)) {
+        if (isFunction(iterator)) {
           value = this.getIn(arr);
-          result = iteratee(value);
+          result = iterator(value);
           return this.setIn(arr, isVoid0(result, true) ? defaultValue : result);
         }
 
         else {
-          throw new Error(ERROR.PARAM);
+          throw new Error(ERROR.PARAM(2, 'function'));
         }
-
       }
 
       else {
-        throw new Error(ERROR.PARAM);
+        throw new Error(ERROR.PARAM(0, 'array'));
       }
     };
 
@@ -680,6 +736,7 @@
     collectProto.getIn = getIn;
     collectProto.keys = keys;
     collectProto.values = values;
+    collectProto.entries = entries;
     collectProto.each = each;
     collectProto.has = has;
     collectProto.hasIn = hasIn;
@@ -687,17 +744,19 @@
     collectProto.hashCode = hashCode;
     collectProto.first = first;
     collectProto.last = last;
-    collectProto.reduce = reduce;
     collectProto.update = update;
     collectProto.updateIn = updateIn;
     collectProto.is = collectProto.equals = equals;
+
+    listProto.reduce = reduce;
   };
 
   function initCollection () {
     var args = arguments,
       inst = args[0],
       list = args[1],
-      first = list[0]
+      first = list[0],
+      oIter
       ;
 
     if (isArrayLike(list)) {
@@ -707,10 +766,25 @@
       }
 
       else {
-        list = list.length > 1 ? toArray(list) : isArray(first) ? toArray(first) : [first];
+        checkDataType(inst._type, first, list);
+        if (isObject(first, true) && list.length === 1) {
+          oIter = getObjectIterator(first);
+          inst._object = first;
+          list = inst._keys = oIter.keys;
+          inst._values = oIter.values;
+          inst._entries = oIter.entries;
+          def(inst, 'isSetable', {
+            value: false,
+            writable: false,
+          });
+        }
+
+        else {
+          list = list.length > 1 ? toArray(list) : isArray(first) ? toArray(first) : [first];
+          inst._array = list;
+        }
       }
 
-      inst._array = list;
       defs(inst, {
         size: {
           get: function () {
@@ -762,11 +836,26 @@
   var _Collection = (function () {
     function Collection () {};
     var proto = inherit(Collection);
-    proto._fn = function () {
-      var inst = Object.create(proto);
-      initCollection(inst, arguments);
-      return inst;
+    def(proto, '_fn', {
+        value: newStruct(proto),
+        writable: false,
+    });
+    return proto._fn;
+  } ());
+
+  var _Map = (function () {
+    function Map () {};
+    var proto = inherit(Map, PROTO.COLLECTION);
+
+    function isMap (target) {
+      return target.isMap;
     };
+    Map.isMap = isMap;
+
+    def(proto, '_fn', {
+        value: newStruct(proto),
+        writable: false,
+    });
     return proto._fn;
   } ());
 
@@ -778,11 +867,11 @@
       return target.isList;
     };
     List.isList = isList;
-    proto._fn = function () {
-      var inst = Object.create(proto);
-      initCollection(inst, arguments);
-      return inst;
-    };
+
+    def(proto, '_fn', {
+        value: newStruct(proto),
+        writable: false,
+    });
     return proto._fn;
   } ());
 
@@ -790,6 +879,7 @@
     initPrototype();
     Structs.Collection = _Collection;
     Structs.List = _List;
+    Structs.Map = _Map;
   };
 
   init();
