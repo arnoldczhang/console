@@ -210,9 +210,13 @@
         writable: false,
       },
       isSetable: {
-        value: proto.isCollection || proto.isList,
+        value: !!proto.isList,
         writable: false,
-      }
+      },
+      isMapable: {
+        value: !!proto.isMap,
+        writable: false,
+      },
     });
     return proto;
   };
@@ -341,16 +345,25 @@
     };
   };
 
-  function checkDataType (type, firstObj, list) {
-    switch (type) {
+  function checkDataType (inst, data) {
+    switch (inst._type) {
       case TYPE.COLLECTION: {
-
+        if (!isObject(data)) {
+          throw new Error(ERROR.PARAM(0, 'object or arrayLike'));
+        }
+        break;
       }
       case TYPE.LIST: {
-
+        if (!isArray(data)) {
+          throw new Error(ERROR.PARAM(0, 'array'));
+        }
+        break;
       }
       case TYPE.MAP: {
-
+        if (!isObject(data, true)) {
+          throw new Error(ERROR.PARAM(0, 'object'));
+        }
+        break;
       }
     };
   };
@@ -756,6 +769,7 @@
       inst = args[0],
       list = args[1],
       first = list[0],
+      listLen = first.length,
       oIter
       ;
 
@@ -766,21 +780,17 @@
       }
 
       else {
-        checkDataType(inst._type, first, list);
-        if (isObject(first, true) && list.length === 1) {
+        checkDataType(inst, first);
+        if (!isArray(first)) {
           oIter = getObjectIterator(first);
           inst._object = first;
           list = inst._keys = oIter.keys;
           inst._values = oIter.values;
           inst._entries = oIter.entries;
-          def(inst, 'isSetable', {
-            value: false,
-            writable: false,
-          });
         }
 
         else {
-          list = list.length > 1 ? toArray(list) : isArray(first) ? toArray(first) : [first];
+          list = !listLen ? [] : toArray(first);
           inst._array = list;
         }
       }

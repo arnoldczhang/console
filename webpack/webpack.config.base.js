@@ -13,12 +13,12 @@ module.exports = function (config) {
       publicPath: '/'
     },
 
-    plugins: [
+    plugins: config.uglify ? [
       new webpack.optimize.UglifyJsPlugin({
         mangle: config.mangle || false,
         compress: {warnings: false}
       })
-    ],
+    ] : [],
     resolve: {
       extensions: ['', '.js', '.jsx']
     },

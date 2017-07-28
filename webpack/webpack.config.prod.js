@@ -1,4 +1,5 @@
 var baseFn = require('./webpack.config.base');
 module.exports = baseFn.bind(null, {
-  mangle: true
+  mangle: true,
+  uglify: true,
 });
