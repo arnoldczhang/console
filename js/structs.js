@@ -96,25 +96,25 @@
   };
 
   function isString (str) {
-    return typeof str === 'string';
+    return eq(typeof str, 'string');
   };
 
   function isVoid0 (obj, strict) {
     if (!strict) return obj == ENUM.VOID0;
-    return obj === ENUM.VOID0;
+    return eq(obj, ENUM.VOID0);
   }
 
   function isNumber (num) {
-    return typeof num === 'number';
+    return eq(typeof num, 'number');
   };
 
   function isObject (obj, deep) {
-    if (!deep) return typeof obj === 'object';
-    return toString(obj) === '[object Object]';
+    if (!deep) return eq(typeof obj, 'object');
+    return eq(toString(obj), '[object Object]');
   };
 
   function isFunction (fn) {
-    return toString(fn) === '[object Function]';
+    return eq(toString(fn), '[object Function]');
   };
 
   var isArray = Array.isArray;
@@ -124,17 +124,17 @@
     var length = "length" in obj && obj.length,
       type = typeof obj;
 
-    if (type === "function" || w === obj) {
+    if (eq(type, "function") || eq(w, obj)) {
         return false;
     }
 
-    if (obj.nodeType === 1 && length) {
+    if (eq(obj.nodeType, 1) && length) {
         return true;
     }
-    return type === "array" 
-      || length === 0 
-      || typeof length === "number" 
-      && length > 0 
+    return eq(type, "array")
+      || eq(length, 0)
+      || eq(typeof length, "number")
+      && length > 0
       && ( length - 1 ) in obj;
   };  
 
@@ -176,12 +176,36 @@
 
     if (len = arrLike.length) {
       arr = Array(len);
+
       for (var i = -1; i++ < len - 1; ) {
         arr[i] = arrLike[i];
-      }      
+      }
     }
 
     return arr;
+  };
+
+  function toObject(objLike) {
+    var obj,
+      keyArr,
+      len
+      ;
+
+    if (isObject(objLike, true)) {
+      obj = {};
+      keyArr = Object.keys(objLike);
+      len = keyArr.length;
+
+      for (var i = -1; i++ < len - 1; ) {
+        obj[keyArr[i]] = objLike[keyArr[i]];
+      }
+
+      return obj;
+    }
+
+    else {
+      throw new Error(ERROR.PARAM(0, 'object'));
+    }
   };
 
   function inherit (className, supProto) {
@@ -209,32 +233,28 @@
         value: TYPE[name],
         writable: false,
       },
-      isSetable: {
-        value: !!proto.isList,
-        writable: false,
-      },
-      isMapable: {
-        value: !!proto.isMap,
-        writable: false,
-      },
     });
     return proto;
   };
 
+  function eq (target, other) {
+    return target === other;
+  };
+
   function deepEqual (target, other) {
     var result;
-    if (target === other) return true;
+    if (eq(target, other)) return true;
 
     if (target._type && other._type) {
       return target.equals(other);
     }
 
-    if (toString(target) !== toString(other)) {
+    if (!eq(toString(target), toString(other))) {
       return false;
     }
 
     if (!isObject(target) && !isObject(other)) {
-      return target === other;
+      return eq(target, other);
     }
 
     else {
@@ -251,7 +271,7 @@
 
   function shallowEqual (target, other) {
     if (target._type && other._type) return target.equals(other);
-    return target === other;
+    return eq(target, other);
   };
 
   function forEach (arr, cb, ctx) {
@@ -376,27 +396,30 @@
     function set (index, value) {
       var argsLen = arguments.length, 
         newArray,
+        newObject,
         arrLen = this.size,
-        lastIndex = arrLen - 1,
-        indexInArr = index >= 0 && index < arrLen
+        lastIndex,
+        indexInArr
         ;
-      index = toIndex(index, arrLen);
 
-      if (isNaN(index)) {
-        throw new Error(ERROR.PARAM(0, 'number'));
-      }
-        
       if (this.isSetable) {
+        indexInArr = index >= 0 && index < arrLen;
+        index = toIndex(index, arrLen);
+        lastIndex = arrLen - 1;
 
-        if (indexInArr && this.get(index) === value) {
+        if (isNaN(index)) {
+          throw new Error(ERROR.PARAM(0, 'number'));
+        }
+
+        if (indexInArr && eq(this.get(index), value)) {
           return this;
         }
 
         newArray = toArray(this._array);
 
-       if (argsLen === 1) {
+       if (eq(argsLen, 1)) {
 
-          if (index === lastIndex) {
+          if (eq(index, lastIndex)) {
             newArray.length -= 1;
           }
 
@@ -412,26 +435,47 @@
         else {
           newArray[index] = value;
         }
+
+        return this._fn(newArray);
       }
 
       else {
-        // TODO
+
+        if (eq(this.get(index), value)) {
+          return this;
+        }
+
+        newObject = toObject(this._object);
+        newObject[index] = value;
+
+        return this._fn(newObject);
       }
-      
-      return this._fn(newArray);
     };
 
     function get (index) {
-      index = toIndex(index, this.size);
       if (this.isSetable) {
+        index = toIndex(index, this.size);
         return this._array[index];
       }
 
       else {
-        // TODO
-      }
+        
+        if (isObject(index)) {
+          return forEach(this._entries, function (entry) {
+            var key = entry[0],
+              value = entry[1]
+              ;
 
-      return ENUM.NULL;
+            if (eq(key, index)) {
+              return value;
+            }
+          });
+        }
+
+        else {
+          return this._object[index];
+        }
+      }
     };
 
     function setIn (arr, value) {
@@ -448,21 +492,15 @@
     function getIn (arr) {
       if (isArray(arr)) {
 
-        if (this.isSetable) {
-          return arr.reduce(function (result, next, index) {
-            if (result.get) {
-              return result.get(next);
-            }
+        return arr.reduce(function (result, next, index) {
+          if (result.get) {
+            return result.get(next);
+          }
 
-            else {
-              throw new Error(ERROR.GETFN(index));
-            }
-          }, this);
-        }
-
-        else {
-          // TODO
-        }
+          else {
+            throw new Error(ERROR.GETFN(index));
+          }
+        }, this);
       }
 
       else {
@@ -476,7 +514,7 @@
       }
 
       else {
-        // TODO
+        return this._keys.indexOf(index) != -1;
       }
     };
 
@@ -536,19 +574,19 @@
 
       if (!argsLen) return false;
 
-      if (this === struct) {
+      if (eq(this, struct)) {
         return true;
       }
 
       if (this._type && struct._type) {
 
-        if (this._type !== struct._type) {
+        if (!eq(this._type, struct._type)) {
           return false;
         }
 
         if (this.isSetable) {
 
-          if (this.size !== struct.size) {
+          if (!eq(this.size, struct.size)) {
             return false;
           }
 
@@ -588,13 +626,8 @@
     };
 
     function each (cb) {
-      if (this.isSetable) {
-        return forEach(this._array, cb, this);
-      }
-
-      else {
-        // TODO
-      }
+      var iteratee = this[this.isSetable ? '_array' : '_object'];
+      return forEach(iteratee, cb, this);
     };
 
     function keys () {
@@ -607,18 +640,13 @@
       }
 
       else {
-        // TODO
+        return _Iterator(this._keys);
       }
     };
 
     function values () {
-      if (this.isSetable) {
-        return _Iterator(this._array);
-      }
-
-      else {
-        // TODO
-      }
+      var iteratee = this[this.isSetable ? '_array' : '_values'];
+      return _Iterator(iteratee);
     };
 
     function entries () {
@@ -631,7 +659,7 @@
       }
 
       else {
-        // TODO
+        return _Iterator(this._entries);
       }
     };
 
@@ -645,7 +673,7 @@
       }
 
       else {
-        // TODO
+        return this._entries[0][1];
       }
     };
 
@@ -655,7 +683,7 @@
       }
 
       else {
-        // TODO
+        return this._entries[this.size - 1][1];
       }
     };
 
@@ -683,7 +711,7 @@
         result
         ;
 
-      if (argLen === 1) {
+      if (eq(argLen, 1)) {
 
         if (isFunction(key)) {
           iterator = key;
@@ -695,7 +723,7 @@
         }
       }
 
-      else if (argLen === 2 && isFunction(defaultValue)) {
+      else if (eq(argLen, 2) && isFunction(defaultValue)) {
         iterator = defaultValue;
         defaultValue = ENUM.VOID0;
       }
@@ -768,30 +796,39 @@
     var args = arguments,
       inst = args[0],
       list = args[1],
-      first = list[0],
-      listLen = first.length,
+      input = list[0],
+      listLen = input.length,
       oIter
       ;
 
     if (isArrayLike(list)) {
 
-      if (isVoid0(first)) {
+      if (isVoid0(input)) {
         inst._array = [];
       }
 
       else {
-        checkDataType(inst, first);
-        if (!isArray(first)) {
-          oIter = getObjectIterator(first);
-          inst._object = first;
+        checkDataType(inst, input);
+
+        if (!isArray(input)) {
+          oIter = getObjectIterator(input);
+          inst._object = input;
           list = inst._keys = oIter.keys;
           inst._values = oIter.values;
           inst._entries = oIter.entries;
+          def(inst, 'isMapable', {
+            value: true,
+            writable: false
+          });
         }
 
         else {
-          list = !listLen ? [] : toArray(first);
+          list = !listLen ? [] : toArray(input);
           inst._array = list;
+          def(inst, 'isSetable', {
+            value: true,
+            writable: false
+          });
         }
       }
 

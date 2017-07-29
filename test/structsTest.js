@@ -80,7 +80,31 @@ describe('structs', function () {
         var list2 = list.update(1, 'aaa', function (ch) {
         });
         expect(list2.get(1)).to.be.equal('aaa');
+        done();
+    });
 
+    it('set(In)', function (done) {
+        var col = Collection([1, 2, 3]);
+        expect(col.set(1, 100)).to.be.deep.equal(Collection([1, 100, 3]));
+        expect(col.set(5, Collection({a: 1}))).to.be.deep.equal(Collection([1, 2, 3,,,Collection({a: 1})]));
+
+        var list = List([1, 2, 3]);
+        expect(list.set(1, 100)).to.be.deep.equal(List([1, 100, 3]));
+        expect(list.set(5, Collection({a: 1}))).to.be.deep.equal(List([1, 2, 3,,,Collection({a: 1})]));
+
+
+        done();
+    });
+
+    it('get(In)', function (done) {
+        done();
+    });
+
+    it('update(In)', function (done) {
+        done();
+    });
+
+    it('error', function (done) {
         expect(Collection({})).to.be.deep.equal(Collection({}));
         expect(Collection([])).to.be.deep.equal(Collection([]));
 
@@ -95,7 +119,6 @@ describe('structs', function () {
         }).to.throw('args[0] is not type of object');
 
         expect(Map({})).to.be.deep.equal(Map({}));
-
         done();
     });
 });

@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mochawesome Report Card</title>
+    
+    <link rel="stylesheet" href="css/mochawesome.css">
+  </head>
+  <body>
+
+    <!-- NAVBAR -->
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="report-info-cnt">
+          <h1 class="report-title">console</h1>
+          <h3 class="report-date">Saturday, July 29 2017, 11:53pm</h3>
+        </div>
+        <div class="nav-right">
+          <div class="quick-summary-cnt">
+              <ul class="list-unstyled quick-summary">
+                <li class="qs-item summary-duration" title="Duration">47<span>MS</span></li>
+                <li class="qs-item summary-suites" title="Suites">1</li>
+                <li class="qs-item summary-tests" title="Tests">5</li>
+                <li class="qs-item summary-passes" title="Passed" data-filter="passed">5</li>
+                <li class="qs-item summary-failures" title="Failed" data-filter="failed">0</li>
+                <li class="qs-item summary-pending" title="Pending" data-filter="pending">0</li>
+              </ul>          </div>
+          <button class="nav-menu-btn open-menu"><i class="icon-menu"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Summary -->
+    <div class="summary">
+      <div class="container">
+          <div class="row">
+            <div class="summary-col summary-duration">
+              <h1 class="summary-count">47<span>MS</span></h1>
+              <h4 class="summary-label">MS</h4>
+            </div>
+            <div class="summary-col summary-suites" title="Suites">
+              <h1 class="summary-count">1</h1>
+              <h4 class="summary-label">Suite</h4>
+            </div>
+            <div class="summary-col summary-tests" title="Tests">
+              <h1 class="summary-count">5</h1>
+              <h4 class="summary-label">Tests</h4>
+            </div>
+            <div class="summary-col summary-passes" data-filter="passed" title="Passed">
+              <h1 class="summary-count">5</h1>
+              <h4 class="summary-label">Passed</h4>
+            </div>
+            <div class="summary-col summary-failures" data-filter="failed" title="Failed">
+              <h1 class="summary-count">0</h1>
+              <h4 class="summary-label">Failed</h4>
+            </div>
+            <div class="summary-col summary-pending" data-filter="pending" title="Pending">
+              <h1 class="summary-count">0</h1>
+              <h4 class="summary-label">Pending</h4>
+            </div>
+          </div>      </div>
+    </div>
+    <div class="statusbar">
+      <div class="container">
+          <div class="row">
+            <div class="status-item status-item-pending-pct">0% Pending</div>
+            <div class="status-item status-item-passing-pct success">100% Passing</div>
+          </div>      </div>
+    </div>
+
+    <!-- Suites -->
+    <div class="details container">
+            <section class="suite-wrap">
+          <div id="968685b0-68fa-438e-9cf6-fd3e77b518a7" class="suite has-tests has-passed">
+            <h3 class="suite-title">structs</h3>
+            <h5 class="suite-filename">\test\structsTest.js</h5>
+            <!-- Suite Chart -->
+            <div class="suite-chart-wrap">
+              <canvas id="968685b0-68fa-438e-9cf6-fd3e77b518a7" class="suite-chart" width="50" height="50" data-total-passes="5" data-total-failures="0" data-total-pending="0" data-total-skipped="0"></canvas>
+            </div>
+            <div class="suite-data-wrap">
+              <!-- Suite Summary -->
+              <ul class="suite-summary list-unstyled">
+                <li class="suite-summary-item duration">12 ms</li>
+                <li class="suite-summary-item tests">5</li>
+                <li class="suite-summary-item passed">5</li>
+                <li class="suite-summary-item failed">0</li>
+                <li class="suite-summary-item pending">0</li>
+              </ul>
+              <!-- Test Info -->
+              <div class="suite-test-wrap">
+                <div class="suite-test-header" data-toggle="collapse" data-target="#968685b0-68fa-438e-9cf6-fd3e77b518a7-test-list">
+                  <h4 class="suite-test-header-title">Tests</h4>
+                </div>
+                <div id="968685b0-68fa-438e-9cf6-fd3e77b518a7-test-list" class="list-group test-list collapse in">
+                    <div id="b8638cee-4a3c-4aae-8678-54e23821fbd3" class="list-group-item test passed">
+          <!-- Test Heading -->
+          <div class="test-heading">
+            <h4 class="test-title">
+              <span class="text-muted hidden"> it </span>
+              length
+            </h4>
+            <div class="pull-right">
+              <button class="btn btn-link btn-sm toggle-btn toggle-code collapsed" data-toggle="collapse" data-target="#b8638cee-4a3c-4aae-8678-54e23821fbd3 > .test-code.collapse">Code</button>
+              <span class="test-duration fast">6 ms</span>
+            </div>
+          </div>
+          <!-- Test Errors -->
+          <!-- Test Code -->
+          <div class="test-code collapse">
+            <pre><code class="hljs javascript small"><span class="hljs-keyword">var</span> col = Collection([<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>]);<br><span class="hljs-keyword">var</span> col2 = Collection([<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>]);<br><span class="hljs-keyword">var</span> col3 = Collection([<span class="hljs-number">1</span>]);<br><span class="hljs-keyword">var</span> col4 = Collection([<span class="hljs-number">1</span>]);<br>expect(col.size).to.be.equal(<span class="hljs-number">3</span>);<br>expect(col2.size).to.be.equal(<span class="hljs-number">3</span>);<br>expect(col3.size).to.be.equal(<span class="hljs-number">1</span>);<br>expect(col4.size).to.be.equal(<span class="hljs-number">1</span>);<br><span class="hljs-keyword">var</span> list = List([<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,{a: <span class="hljs-number">1</span>}, <span class="hljs-number">3</span>,,<span class="hljs-number">4</span>]);<br><span class="hljs-keyword">var</span> list2 = list.set(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>);<br>expect(list === list2).to.be.true;<br>expect(list.equals(list2)).to.be.true;<br><span class="hljs-keyword">var</span> list = List([<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,{a: <span class="hljs-number">1</span>}, <span class="hljs-number">3</span>,,<span class="hljs-number">4</span>]);<br><span class="hljs-keyword">var</span> list2 = List([<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,{a: <span class="hljs-number">1</span>}, <span class="hljs-number">3</span>,,<span class="hljs-number">4</span>]);<br>expect(list.equals(list2)).to.be.true;<br><span class="hljs-keyword">var</span> simple = List([<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>]);<br>list = List([<span class="hljs-number">1</span>, simple,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,,{a:<span class="hljs-number">1</span>}]);<br>list2 = List([<span class="hljs-number">1</span>, simple,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>,,{a:<span class="hljs-number">1</span>}]);<br>expect(list.equals(list2)).to.be.true;<br><span class="hljs-keyword">var</span> list = List([<span class="hljs-number">1</span>,<span class="hljs-number">2</span>, [<span class="hljs-number">1</span>]]);<br>expect(list.includes([<span class="hljs-number">1</span>])).to.be.false;<br><span class="hljs-keyword">var</span> li = List([<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>]);<br><span class="hljs-keyword">var</span> list = List([li, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>, <span class="hljs-number">4</span>]);<br>expect(list.includes(li)).to.be.true;<br><span class="hljs-keyword">var</span> list = List([<span class="hljs-number">1</span>,<span class="hljs-number">2</span>,<span class="hljs-number">3</span>,<span class="hljs-number">4</span>]);<br>expect(list.reduce(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">a,b</span>) </span>{<br>    <span class="hljs-keyword">return</span> a + b + <span class="hljs-keyword">this</span>.a;<br>}, <span class="hljs-number">100</span>, {<br>    a: <span class="hljs-number">100</span><br>})).to.be.equal(<span class="hljs-number">510</span>);<br><span class="hljs-keyword">var</span> li = List([<span class="hljs-number">3</span>]);<br><span class="hljs-keyword">var</span> list = List([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, li]);<br>expect(list.first()).to.be.equal(<span class="hljs-number">1</span>);<br>expect(list.last()).to.be.equal(li);<br><span class="hljs-keyword">var</span> list = List([<span class="hljs-number">1</span>,<span class="hljs-number">2</span>, [<span class="hljs-number">1</span>]]);<br><span class="hljs-keyword">var</span> list2 = list.update(<span class="hljs-number">1</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">ch</span>) </span>{<br>    <span class="hljs-keyword">return</span> ch * <span class="hljs-number">100</span>;<br>});<br>expect(list2.get(<span class="hljs-number">1</span>)).to.be.equal(<span class="hljs-number">200</span>);<br><span class="hljs-keyword">var</span> list2 = list.update(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">ch</span>) </span>{<br>    <span class="hljs-keyword">return</span> ch.get(<span class="hljs-number">2</span>);<br>});<br>expect(list2).to.be.deep.equal([<span class="hljs-number">1</span>]);<br><span class="hljs-keyword">var</span> list2 = list.update(<span class="hljs-number">1</span>, <span class="hljs-string">'aaa'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">ch</span>) </span>{<br>});<br>expect(list2.get(<span class="hljs-number">1</span>)).to.be.equal(<span class="hljs-string">'aaa'</span>);<br>done();</code></pre>
+          </div>
+          <!-- Test Error Stack -->
+        </div>            <div id="62c42725-a595-40b8-83a6-ff11fcd79dc3" class="list-group-item test passed">
+          <!-- Test Heading -->
+          <div class="test-heading">
+            <h4 class="test-title">
+              <span class="text-muted hidden"> it </span>
+              set(In)
+            </h4>
+            <div class="pull-right">
+              <button class="btn btn-link btn-sm toggle-btn toggle-code collapsed" data-toggle="collapse" data-target="#62c42725-a595-40b8-83a6-ff11fcd79dc3 > .test-code.collapse">Code</button>
+              <span class="test-duration fast">4 ms</span>
+            </div>
+          </div>
+          <!-- Test Errors -->
+          <!-- Test Code -->
+          <div class="test-code collapse">
+            <pre><code class="hljs javascript small"><span class="hljs-keyword">var</span> col = Collection([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>]);<br>expect(col.set(<span class="hljs-number">1</span>, <span class="hljs-number">100</span>)).to.be.deep.equal(Collection([<span class="hljs-number">1</span>, <span class="hljs-number">100</span>, <span class="hljs-number">3</span>]));<br>expect(col.set(<span class="hljs-number">5</span>, Collection({a: <span class="hljs-number">1</span>}))).to.be.deep.equal(Collection([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>,,,Collection({a: <span class="hljs-number">1</span>})]));<br><span class="hljs-keyword">var</span> list = List([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>]);<br>expect(list.set(<span class="hljs-number">1</span>, <span class="hljs-number">100</span>)).to.be.deep.equal(List([<span class="hljs-number">1</span>, <span class="hljs-number">100</span>, <span class="hljs-number">3</span>]));<br>expect(list.set(<span class="hljs-number">5</span>, Collection({a: <span class="hljs-number">1</span>}))).to.be.deep.equal(List([<span class="hljs-number">1</span>, <span class="hljs-number">2</span>, <span class="hljs-number">3</span>,,,Collection({a: <span class="hljs-number">1</span>})]));<br><br>done();</code></pre>
+          </div>
+          <!-- Test Error Stack -->
+        </div>            <div id="dec78f83-23ea-4ead-8544-66ee2ad310c1" class="list-group-item test passed">
+          <!-- Test Heading -->
+          <div class="test-heading">
+            <h4 class="test-title">
+              <span class="text-muted hidden"> it </span>
+              get(In)
+            </h4>
+            <div class="pull-right">
+              <button class="btn btn-link btn-sm toggle-btn toggle-code collapsed" data-toggle="collapse" data-target="#dec78f83-23ea-4ead-8544-66ee2ad310c1 > .test-code.collapse">Code</button>
+              <span class="test-duration fast">0 ms</span>
+            </div>
+          </div>
+          <!-- Test Errors -->
+          <!-- Test Code -->
+          <div class="test-code collapse">
+            <pre><code class="hljs javascript small">done();</code></pre>
+          </div>
+          <!-- Test Error Stack -->
+        </div>            <div id="4ca57fd8-8e4d-43f0-ba1a-889b2b16df09" class="list-group-item test passed">
+          <!-- Test Heading -->
+          <div class="test-heading">
+            <h4 class="test-title">
+              <span class="text-muted hidden"> it </span>
+              update(In)
+            </h4>
+            <div class="pull-right">
+              <button class="btn btn-link btn-sm toggle-btn toggle-code collapsed" data-toggle="collapse" data-target="#4ca57fd8-8e4d-43f0-ba1a-889b2b16df09 > .test-code.collapse">Code</button>
+              <span class="test-duration fast">0 ms</span>
+            </div>
+          </div>
+          <!-- Test Errors -->
+          <!-- Test Code -->
+          <div class="test-code collapse">
+            <pre><code class="hljs javascript small">done();</code></pre>
+          </div>
+          <!-- Test Error Stack -->
+        </div>            <div id="b925677f-1e58-438f-99be-d2dba77ee76f" class="list-group-item test passed">
+          <!-- Test Heading -->
+          <div class="test-heading">
+            <h4 class="test-title">
+              <span class="text-muted hidden"> it </span>
+              error
+            </h4>
+            <div class="pull-right">
+              <button class="btn btn-link btn-sm toggle-btn toggle-code collapsed" data-toggle="collapse" data-target="#b925677f-1e58-438f-99be-d2dba77ee76f > .test-code.collapse">Code</button>
+              <span class="test-duration fast">2 ms</span>
+            </div>
+          </div>
+          <!-- Test Errors -->
+          <!-- Test Code -->
+          <div class="test-code collapse">
+            <pre><code class="hljs javascript small">expect(Collection({})).to.be.deep.equal(Collection({}));<br>expect(Collection([])).to.be.deep.equal(Collection([]));<br>expect(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{<br>    List({});<br>}).to.throw(<span class="hljs-string">'args[0] is not type of array'</span>);<br>expect(List([])).to.be.deep.equal(List([]));<br>expect(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{<br>    <span class="hljs-built_in">Map</span>([]);<br>}).to.throw(<span class="hljs-string">'args[0] is not type of object'</span>);<br>expect(<span class="hljs-built_in">Map</span>({})).to.be.deep.equal(<span class="hljs-built_in">Map</span>({}));<br>done();</code></pre>
+          </div>
+          <!-- Test Error Stack -->
+        </div>        </div>
+              </div>
+            </div>
+        
+        
+          </div>
+        </section>
+    </div>
+
+    <footer>
+      <div class="container">
+        <p>Report generated by <a href="http://adamgruber.github.io/mochawesome/" target="_blank">mochawesome</a>.<br>Designed and built by <a href="https://github.com/adamgruber" target="_blank">adamgruber</a>. &copy;2017.</p>
+      </div>
+    </footer>
+
+    <!-- Nav Menu -->
+    <div class="nav-menu-wrap">
+      <div class="menu-overlay close-menu"></div>
+      <nav class="menu">
+        <button class="nav-menu-btn close-menu"><i class="icon-failed"></i></button>
+        <ul class="list-unstyled main-menu">
+                <li class="nav-menu-item">
+                <a href="#968685b0-68fa-438e-9cf6-fd3e77b518a7" class="nav-menu-item-link has-passes">structs</a>
+            </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/vendor.js"></script>
+    <script src="js/mochawesome.js"></script>
+  </body>
+</html>
