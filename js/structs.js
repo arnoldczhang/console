@@ -63,6 +63,7 @@
     },
     EXPECTARR: 'Expected Array or collection object of values: [object Object]',
     EXPECTOBJ: 'Expected Object or map object of values: [object Array]',
+    COLLECTION: 'the object`s type must be based on `Collection`',
   };
 
   /*
@@ -339,7 +340,7 @@
    */
   
   function reduceSet (struct, keyArr, value) {
-    if (!keyArr.length) return struct;
+    if (!keyArr.length) return value;
     var key = keyArr.shift(),
       result = struct.get(key)
       ;
@@ -447,7 +448,6 @@
 
         newObject = toObject(this._object);
         newObject[index] = value;
-
         return this._fn(newObject);
       }
     };
@@ -584,7 +584,7 @@
           return false;
         }
 
-        if (this.isSetable) {
+        if (this.isCollection) {
 
           if (!eq(this.size, struct.size)) {
             return false;
@@ -616,7 +616,7 @@
         }
 
         else {
-          // TODO
+          throw new Error(ERROR.COLLECTION);
         }
       }
 
@@ -697,10 +697,6 @@
 
       if (this.isSetable) {
         return $reduce.apply(this._array, applyList);
-      }
-
-      else {
-        // TODO
       }
     };
 
