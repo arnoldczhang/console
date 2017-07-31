@@ -7,6 +7,7 @@ describe('structs', function () {
     var Collection = Structs.Collection;
     var List = Structs.List;
     var Map = Structs.Map;
+    var fromJS = Structs.fromJS;
 
     before(function() {
         // 在本区块的所有测试用例之前执行
@@ -349,6 +350,64 @@ describe('structs', function () {
         var list = List([1, 2, li]);
         expect(list.first()).to.be.equal(1);
         expect(list.last()).to.be.equal(li);
+        done();
+    });
+
+    it('fromJS', function (done) {
+        var col = fromJS([1,2,3]);
+        expect(col.get(0)).to.be.equal(1);
+        expect(col.get(1)).to.be.equal(2);
+        expect(col.get(2)).to.be.equal(3);
+
+        var col2 = fromJS({a: 1, b: 2, c: 3});
+        expect(col2.get('a')).to.be.equal(1);
+        expect(col2.get('b')).to.be.equal(2);
+        expect(col2.get('c')).to.be.equal(3);
+
+        var col3 = fromJS([1,,,3, {a: 1, b: [1, 3, {c: 11, d: 121}]}]);
+        expect(col3.get(1)).to.be.equal(undefined);
+        expect(col3.get(3)).to.be.equal(3);
+        expect(col3.getIn([4, 'a'])).to.be.equal(1);
+        expect(col3.getIn([4, 'b']).get(0)).to.be.equal(1);
+        expect(col3.getIn([4, 'b', 0])).to.be.equal(1);
+        expect(col3.getIn([4, 'b']).get(1)).to.be.equal(3);
+        expect(col3.getIn([4, 'b']).get(2).get('c')).to.be.equal(11);
+        expect(col3.getIn([4, 'b', 2, 'c'])).to.be.equal(11);
+        expect(col3.getIn([4, 'b']).get(2).get('d')).to.be.equal(121);
+        done();
+    });
+
+    it('equals', function (done) {
+        var obj1 = {
+          a: 1,
+          b: 2,
+          c: [1,3, {
+            d: 1,
+            e: [1,2,3],
+            f: {
+              g: {
+                h: 11
+              }
+            }
+          }]
+        };
+
+        var obj2 = {
+          a: 1,
+          b: 2,
+          c: [1,3, {
+            d: 1,
+            e: [1,2,3],
+            f: {
+              g: {
+                h: 1
+              }
+            }
+          }]
+        };
+        var obj1 = fromJS(obj1);
+        var obj2 = fromJS(obj2);
+        expect(obj1.equals(obj2)).to.be.false;
         done();
     });
 

@@ -1,6 +1,24 @@
 /**
  * Structs
- * 
+ *
+ * set
+ * setIn
+ * get
+ * getIn
+ * has
+ * hasIn
+ * update
+ * updateIn
+ * keys
+ * values
+ * entries
+ * each
+ * includes
+ * hashCode
+ * first
+ * last
+ * is
+ * equals
  */
 ;(function (global, factory) {
   typeof exports === 'object'
@@ -590,10 +608,10 @@
             return false;
           }
 
-          values = this.values();
+          thisValues = this.values();
           structValues = struct.values();
 
-          while ((thisValue = values.next()) && !thisValue.done) {
+          while ((thisValue = thisValues.next()) && !thisValue.done) {
             thisValue = thisValue.value;
             structValue = structValues.next().value;
 
@@ -768,21 +786,21 @@
     };
 
     collectProto.set = set;
-    collectProto.get = get;
     collectProto.setIn = setIn;
+    collectProto.get = get;
     collectProto.getIn = getIn;
+    collectProto.has = has;
+    collectProto.hasIn = hasIn;
+    collectProto.update = update;
+    collectProto.updateIn = updateIn;
     collectProto.keys = keys;
     collectProto.values = values;
     collectProto.entries = entries;
     collectProto.each = each;
-    collectProto.has = has;
-    collectProto.hasIn = hasIn;
     collectProto.includes = includes;
     collectProto.hashCode = hashCode;
     collectProto.first = first;
     collectProto.last = last;
-    collectProto.update = update;
-    collectProto.updateIn = updateIn;
     collectProto.is = collectProto.equals = equals;
 
     listProto.reduce = reduce;
@@ -918,11 +936,39 @@
     return proto._fn;
   } ());
 
+  function _fromJS (target) {
+    if (target._type) return target;
+    var isArr,
+      isObj
+      ;
+
+    if (isObject(target)) {
+      isArr = isArray(target);
+      isObj = isObject(target, true);
+
+      if (isArr || isObj) {
+        forEach(target, function (value, index) {
+          target[index] = isVoid0(value) ? value : _fromJS(value);
+        });
+        return isArr ? _List(target) : _Map(target);
+      }
+
+      else {
+        return target;
+      }
+    }
+
+    else {
+      return target;
+    }
+  };
+
   function init () {
     initPrototype();
     Structs.Collection = _Collection;
     Structs.List = _List;
     Structs.Map = _Map;
+    Structs.fromJS = _fromJS;
   };
 
   init();
