@@ -268,10 +268,6 @@
       return target.equals(other);
     }
 
-    if (!eq(toString(target), toString(other))) {
-      return false;
-    }
-
     if (!isObject(target) && !isObject(other)) {
       return eq(target, other);
     }

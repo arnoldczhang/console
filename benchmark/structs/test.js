@@ -29,10 +29,6 @@ var obj2 = {
     }
   }]
 };
-var Collection = Structs.Collection;
-var List = Structs.List;
-var Map = Structs.Map;
-var fromJS = Structs.fromJS;
 
 var toString = function (obj) {
     return ({}.toString).call(obj);
@@ -86,14 +82,26 @@ var toString = function (obj) {
       return result == null ? true : result;
     }
   };
-suite.add('Structs', function() {
+
+suite
+.add('Structs', function() {
+  var fromJS = Structs.fromJS;
   function deepEqual (obj1, obj2) {
     obj1.equals(obj2);
   };
   deepEqual(fromJS(obj1), fromJS(obj2));
-}).add('Simple compare', function() {
+})
+.add('Simple compare', function() {
   deepEqual(obj1, obj2);
-}).on('cycle', function(event) {
+})
+.add('immutablejs', function () {
+  var fromJS = Immutable.fromJS;
+  function deepEqual (obj1, obj2) {
+    obj1.equals(obj2);
+  };
+  deepEqual(fromJS(obj1), fromJS(obj2));
+})
+.on('cycle', function(event) {
     console.log(String(event.target));
 }).on('complete', function() {
     console.log('Fastest is ' + this.filter('fastest').map(function (bch) {
