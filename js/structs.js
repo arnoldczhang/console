@@ -345,7 +345,7 @@
       result = struct.get(key)
       ;
 
-    if (result.get) {
+    if (result && result.get) {
       return struct.set(key, reduceSet(result, keyArr, value));
     }
 

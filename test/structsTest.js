@@ -187,7 +187,90 @@ describe('structs', function () {
         expect(col.updateIn(['c', 1, 'aa'], function (ch) {
             return ch + 100;
         })).to.be.deep.equal(Collection({a: 1, b: 2, c: List([1,Map({aa: 110}),3])}));
+        expect(col.update('dd', function (col) {
+            return 123;
+        })).to.be.deep.equal(Collection({a: 1, b: 2, c: List([1,Map({aa: 10}),3]), dd: 123}));
+        expect(col.updateIn(['dd'], function (col) {
+            return 123;
+        })).to.be.deep.equal(Collection({a: 1, b: 2, c: List([1,Map({aa: 10}),3]), dd: 123}));
 
+        var col = Collection([List([1,3,5]), Map({a: 1, b: 2, c: List([1,Map({aa: 10}),3])})]);
+        expect(col.updateIn([0], function (ch) {
+            return ch.set(0, 100);
+        })).to.be.deep.equal(Collection([List([100,3,5]), Map({a: 1, b: 2, c: List([1,Map({aa: 10}),3])})]));
+        expect(col.updateIn([0], function (ch) {
+            return ch.set(1, 100);
+        })).to.be.deep.equal(Collection([List([1,100,5]), Map({a: 1, b: 2, c: List([1,Map({aa: 10}),3])})]));
+        expect(col.updateIn([0], function (ch) {
+            return ch.set(2, 100);
+        })).to.be.deep.equal(Collection([List([1,3,100]), Map({a: 1, b: 2, c: List([1,Map({aa: 10}),3])})]));
+        expect(col.updateIn([1], function (ch) {
+            return ch.setIn(['a'], 100);
+        })).to.be.deep.equal(Collection([List([1,3,5]), Map({a: 100, b: 2, c: List([1,Map({aa: 10}),3])})]));
+        expect(col.updateIn([1], function (ch) {
+            return ch.setIn(['b'], 100);
+        })).to.be.deep.equal(Collection([List([1,3,5]), Map({a: 1, b: 100, c: List([1,Map({aa: 10}),3])})]));
+        expect(col.updateIn([1], function (ch) {
+            return ch.setIn(['c', '0'], 100);
+        })).to.be.deep.equal(Collection([List([1,3,5]), Map({a: 1, b: 2, c: List([100,Map({aa: 10}),3])})]));
+        expect(col.updateIn([1], function (ch) {
+            return ch.setIn(['c', 1], Collection([1,2,3]));
+        })).to.be.deep.equal(Collection([List([1,3,5]), Map({a: 1, b: 2, c: List([1,Collection([1,2,3]),3])})]));
+        expect(col.updateIn([1], function (ch) {
+            return ch.setIn(['c', 1, 'aa'], 100);
+        })).to.be.deep.equal(Collection([List([1,3,5]), Map({a: 1, b: 2, c: List([1,Map({aa: 100}),3])})]));
+
+        var map = Map({a: 1, b: 2, c: List([1,Map({aa: 10}),3])});
+        expect(map.updateIn(['a'], function (ch) {
+            return ch + 100;
+        })).to.be.deep.equal(Map({a: 101, b: 2, c: List([1,Map({aa: 10}),3])}));
+        expect(map.updateIn(['b'], function (ch) {
+            return ch + 100;
+        })).to.be.deep.equal(Map({a: 1, b: 102, c: List([1,Map({aa: 10}),3])}));
+        expect(map.updateIn(['c'], function (ch) {
+            return ch.set(0, 100);
+        })).to.be.deep.equal(Map({a: 1, b: 2, c: List([100,Map({aa: 10}),3])}));
+        expect(map.updateIn(['c', 1], function (ch) {
+            return ch
+        })).to.be.deep.equal(Map({a: 1, b: 2, c: List([1,Map({aa: 10}),3])}));
+        expect(map.updateIn(['c', 1], function (ch) {
+            return ch.set('bb', 100);
+        })).to.be.deep.equal(Map({a: 1, b: 2, c: List([1,Map({aa: 10, bb: 100}),3])}));
+        expect(map.updateIn(['c', 1, 'aa'], function (ch) {
+            return ch + 100;
+        })).to.be.deep.equal(Map({a: 1, b: 2, c: List([1,Map({aa: 110}),3])}));
+        expect(map.update('dd', function (col) {
+            return 123;
+        })).to.be.deep.equal(Map({a: 1, b: 2, c: List([1,Map({aa: 10}),3]), dd: 123}));
+        expect(map.updateIn(['dd'], function (col) {
+            return 123;
+        })).to.be.deep.equal(Map({a: 1, b: 2, c: List([1,Map({aa: 10}),3]), dd: 123}));
+
+        var list = List([List([1,3,5]), Map({a: 1, b: 2, c: List([1,Map({aa: 10}),3])})]);
+        expect(list.updateIn([0], function (ch) {
+            return ch.set(0, 100);
+        })).to.be.deep.equal(List([List([100,3,5]), Map({a: 1, b: 2, c: List([1,Map({aa: 10}),3])})]));
+        expect(list.updateIn([0], function (ch) {
+            return ch.set(1, 100);
+        })).to.be.deep.equal(List([List([1,100,5]), Map({a: 1, b: 2, c: List([1,Map({aa: 10}),3])})]));
+        expect(list.updateIn([0], function (ch) {
+            return ch.set(2, 100);
+        })).to.be.deep.equal(List([List([1,3,100]), Map({a: 1, b: 2, c: List([1,Map({aa: 10}),3])})]));
+        expect(list.updateIn([1], function (ch) {
+            return ch.setIn(['a'], 100);
+        })).to.be.deep.equal(List([List([1,3,5]), Map({a: 100, b: 2, c: List([1,Map({aa: 10}),3])})]));
+        expect(list.updateIn([1], function (ch) {
+            return ch.setIn(['b'], 100);
+        })).to.be.deep.equal(List([List([1,3,5]), Map({a: 1, b: 100, c: List([1,Map({aa: 10}),3])})]));
+        expect(list.updateIn([1], function (ch) {
+            return ch.setIn(['c', '0'], 100);
+        })).to.be.deep.equal(List([List([1,3,5]), Map({a: 1, b: 2, c: List([100,Map({aa: 10}),3])})]));
+        expect(list.updateIn([1], function (ch) {
+            return ch.setIn(['c', 1], Collection([1,2,3]));
+        })).to.be.deep.equal(List([List([1,3,5]), Map({a: 1, b: 2, c: List([1,Collection([1,2,3]),3])})]));
+        expect(list.updateIn([1], function (ch) {
+            return ch.setIn(['c', 1, 'aa'], 100);
+        })).to.be.deep.equal(List([List([1,3,5]), Map({a: 1, b: 2, c: List([1,Map({aa: 100}),3])})]));
         done();
     });
 
