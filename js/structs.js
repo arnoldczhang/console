@@ -261,7 +261,7 @@
 
   function deepEqual (target, other) {
     var result;
-    if (eq(target, other)) return true;
+    if (eq(target, other) || isNaN(target) && isNaN(other)) return true;
 
     if (target._type && other._type) {
       return target.equals(other);
