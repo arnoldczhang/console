@@ -408,6 +408,9 @@ describe('structs', function () {
         var obj1 = fromJS(obj1);
         var obj2 = fromJS(obj2);
         expect(obj1.equals(obj2)).to.be.false;
+        var obj1 = Structs(obj1);
+        var obj2 = Structs(obj2);
+        expect(obj1.equals(obj2)).to.be.false;
         done();
     });
 

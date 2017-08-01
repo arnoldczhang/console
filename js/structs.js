@@ -40,8 +40,7 @@
     parse = JSON.parse,
     def = Object.defineProperty,
     defs = Object.defineProperties,
-    $reduce = ARR.reduce,
-    Structs = {}
+    $reduce = ARR.reduce
     ;
 
   var TYPE = {
@@ -932,7 +931,7 @@
     return proto._fn;
   } ());
 
-  function _fromJS (target) {
+  function Structs (target) {
     if (target._type) return target;
     var isArr,
       isObj
@@ -944,7 +943,7 @@
 
       if (isArr || isObj) {
         forEach(target, function (value, index) {
-          target[index] = isVoid0(value) ? value : _fromJS(value);
+          target[index] = isVoid0(value) ? value : Structs(value);
         });
         return isArr ? _List(target) : _Map(target);
       }
@@ -961,10 +960,10 @@
 
   function init () {
     initPrototype();
+    Structs.fromJS = Structs;
     Structs.Collection = _Collection;
     Structs.List = _List;
     Structs.Map = _Map;
-    Structs.fromJS = _fromJS;
   };
 
   init();
