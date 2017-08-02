@@ -1,4 +1,5 @@
 ;(function () {
+  var fromJS = Structs.fromJS;
 
   function extend (target) {
     var args = arguments,
@@ -61,7 +62,9 @@
 
         if (updateFlag) {
           this.components.forEach(function (component) {
-            return component.update();
+            if (!component.props.equals(component.selector(component.store))) {
+              return component.update();
+            }
           });
         }
       },
@@ -78,22 +81,22 @@
       getters = slice.call(args, 0, -1),
       resultCb = args[args.length - 1],
       len = getters.length,
-      resultArr = Array(len);
+      resultArr = fromJS(Array(len));
       ;
     return function (store) {
       for (var i = 0; i < len; i++) {
-        resultArr[i] = getters[i](store) || {};
+        resultArr = resultArr.set(i, getters[i](store) || fromJS({}));
       }
-      return resultCb.apply(this, resultArr);
+      return resultCb.apply(this, resultArr.toArray());
     };
   };
 
   function Component (selector, props, store) {
     function Component () {};
     var proto = Component.prototype;
-    proto.props = {};
+    proto.props = fromJS({});
     proto.update = function () {
-      extend(this.props, this.selector(store));
+      this.props = this.selector(store);
       return this.render();
     };
 
@@ -102,7 +105,7 @@
     inst.store = store;
     store.components.push(inst);
     inst.selector = selector;
-    inst.props.dispatch = function dispatch (payload) {
+    inst.dispatch = function dispatch (payload) {
       return inst.store.update(payload, true);
     };
     extend(inst, props);
@@ -157,9 +160,9 @@
   };
 
   //reducer
-  var addressReducer = createReducer({
+  var addressReducer = createReducer(fromJS({
     addressName: 'anhua',
-  }, function (initState, payload) {
+  }), function (initState, payload) {
     payload = payload || {};
     var type = payload.type,
       data = payload.data || {}
@@ -167,24 +170,19 @@
 
     switch (type) {
       case TYPE.ADDADDR:
-        return extend({}, initState, {
-          addressName: '更新地址中...',
-        });
+        return initState.set('addressName', '更新地址中...');
       case TYPE.ADDADDRSUC:
-        return extend({}, initState, {
-          addressName: data.addressName,
-        });
-        break;
+        return initState.set('addressName', data.addressName);
       case TYPE.ADDADDRFAIL:
-        break;
+        return initState.set('addressName', '更新地址失败...');
       default:
         return initState;
     };
   });
 
-  var mobileReducer = createReducer({
+  var mobileReducer = createReducer(fromJS({
     mobileNo: 123,
-  }, function (initState, payload) {
+  }), function (initState, payload) {
     payload = payload || {};
     var type = payload.type,
       data = payload.data
@@ -198,9 +196,9 @@
     };
   });
 
-  var menuReducer = createReducer({
+  var menuReducer = createReducer(fromJS({
     dish: [],
-  }, function (initState, payload) {
+  }), function (initState, payload) {
     payload = payload || {};
     var type = payload.type,
       data = payload.data,
@@ -211,29 +209,11 @@
       case TYPE.ADDADDRSUC:
         addressName = data.addressName;
         if (addressName === 'yiyuan') {
-          return extend({}, initState, {
-            dish: [
-              {
-                name: 'a',
-              },
-              {
-                name: 'b',
-              }
-            ],
-          });
+          return initState.set('dish', [{name: 'a', }, {name: 'b', }]);
         }
 
         else if (addressName === 'meituan') {
-          return extend({}, initState, {
-            dish: [
-              {
-                name: 'c',
-              },
-              {
-                name: 'd',
-              }
-            ],
-          });
+          return initState.set('dish', [{name: 'c', }, {name: 'd', } ]);
         }
 
         else {
@@ -268,39 +248,45 @@
   };
 
   var headerReselector = createSelector(addressSelector, mobileSelector, function (address, mobile) {
-    return {
-      addressName: address.addressName,
-      mobileNo: mobile.mobileNo,
-    };
+    return fromJS({
+      addressName: address.get('addressName'),
+      mobileNo: mobile.get('mobileNo'),
+    });
   });
 
   var bodyReselector = createSelector(menuSelector, function (menu) {
-    return {
-      dish: menu.dish,
-    };
+    return fromJS({
+      dish: menu.get('dish'),
+    });
   });
 
   //component
   headerComponent = Component(headerReselector, {
     addAddress: function addAddress (address) {
-      actionAddAddress(this.props.dispatch, address);
+      actionAddAddress(this.dispatch, address);
     },
 
     render: function render () {
-      console.log(this.props);
+      console.log(this.props.get('addressName'));
     },
   }, store);
 
   bodyComponent = Component(bodyReselector, {
     addAddress: function addAddress (address) {
-      actionAddAddress(this.props.dispatch, address);
+      actionAddAddress(this.dispatch, address);
     },
     render: function render () {
-      console.log(this.props.dish);
+      console.log(this.props.get('dish').toArray());
     },
   }, store);
 
   headerComponent.addAddress({
     addressName: 'yiyuan'
+  });
+  bodyComponent.addAddress({
+    addressName: 'meituan'
+  });
+  bodyComponent.addAddress({
+    addressName: 'meituan'
   });
 } ())

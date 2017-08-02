@@ -94,7 +94,7 @@
   };
 
   function extend (target) {
-    var args = toArray(arguments),
+    var args = $toArray(arguments),
       source = args.slice(1);
 
     if (Object.assign) {
@@ -156,6 +156,10 @@
       && ( length - 1 ) in obj;
   };  
 
+  function isNaN (target) {
+    return target !== target;
+  }
+
   function toString (obj) {
     return ({}.toString).call(obj);
   };
@@ -187,7 +191,7 @@
     return '';
   }; 
 
-  function toArray (arrLike) {
+  function $toArray (arrLike) {
     var len,
       arr
       ;
@@ -429,7 +433,7 @@
           return this;
         }
 
-        newArray = toArray(this._array);
+        newArray = $toArray(this._array);
 
        if (eq(argsLen, 1)) {
 
@@ -780,6 +784,10 @@
       }
     };
 
+    function toArray () {
+      return this._array;
+    };
+
     collectProto.set = set;
     collectProto.setIn = setIn;
     collectProto.get = get;
@@ -798,6 +806,7 @@
     collectProto.last = last;
     collectProto.is = collectProto.equals = equals;
 
+    listProto.toArray = toArray;
     listProto.reduce = reduce;
   };
 
@@ -832,7 +841,7 @@
         }
 
         else {
-          list = !listLen ? [] : toArray(input);
+          list = !listLen ? [] : $toArray(input);
           inst._array = list;
           def(inst, 'isSetable', {
             value: true,
