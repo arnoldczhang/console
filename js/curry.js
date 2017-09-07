@@ -40,6 +40,66 @@
     };
   };
 
+  //No.1
+  // function handle (fn) {
+  //   return function (resolve, reject) {
+  //     try{
+  //       fn.apply(this, arguments);
+  //     } catch (err) {
+  //       onerror.apply(this, formatError(err));
+  //     }
+  //   };
+  // };
+
+  // var promise = new Promise(handle(function (resolve, reject) {
+  //   var a = b;
+  // }));
+
+  //No.2
+  // Object.defineProperty(Function.prototype, 'catch', {
+  //   value: function () {
+  //     var _this = this;
+
+  //     function formatError(err) {
+  //       var stack,
+  //         lastStack,
+  //         result,
+  //         message,
+  //         stackReg = /((?:(?:file|https?):\/{2,3}[^:]+|<anonymous>))(?::(\d+)(?::(\d+)|))\b/
+  //         ;
+
+  //       if (err instanceof Error) {
+  //         stack = err.stack.split(/\n/g).map(function (s) {
+  //           return s.trim();
+  //         });
+  //         message = stack[0];
+
+  //         while (lastStack = stack.pop()) {
+  //           result = lastStack.match(stackReg);
+
+  //           if (result) {
+  //             result = result.slice(1);
+  //             return [message].concat(result).concat(err);
+  //           }
+  //         }
+  //         return [message, '', '', '', err];
+  //       }
+  //     };
+
+  //     return function () {
+  //       try {
+  //         _this.apply(this, arguments);
+  //       } catch (err) {
+  //         onerror.apply(this, formatError(err));
+  //       }
+  //     };
+  //   }
+  // });
+
+  // var promise = new Promise(function (resolve, reject) {
+  //   var a = b;
+  // }.catch());
+
   w.curry = curry;
   return curry;  
 }));
